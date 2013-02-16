@@ -60,16 +60,16 @@ very welcome and I encourage you to use the `Issues list
 feedback.
 
 Feel free to fork this repo and to commit your additions. For a list
-of all contributors, please see the :file:`AUTHORS.txt`.
+of all contributors, please see the file `AUTHORS.txt`.
 
-You will need :module:`unittest2` to run the tests.
+You will need `unittest2` to run the tests.
 
 
 License terms
 ==================
 
 git-flow is published under the liberal terms of the BSD License, see
-the :file:`LICENSE.txt`. Although the BSD License does not
+the file `LICENSE.txt`. Although the BSD License does not
 require you to share any modifications you make to the source code,
 you are very much encouraged and invited to contribute back your
 modifications to the community, preferably in a Github fork, of
