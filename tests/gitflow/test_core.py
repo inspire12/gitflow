@@ -829,6 +829,13 @@ class TestGitFlowCommandPublish(TestCase):
         self.assertIn('feat/circular', self.remote.branches)
 
     @remote_clone_from_fixture('sample_repo')
+    def test_gitflow_publish_returns_branch_name(self):
+        gitflow = GitFlow(self.repo).init()
+        gitflow.create('feature', 'circular', 'devel', fetch=False)
+        name = gitflow.publish('feature', 'circular')
+        self.assertEqual(name, 'feat/circular')
+
+    @remote_clone_from_fixture('sample_repo')
     def test_gitflow_publish_creates_sets_tracking_branch(self):
         gitflow = GitFlow(self.repo).init()
         gitflow.create('feature', 'circular', 'devel', fetch=False)
