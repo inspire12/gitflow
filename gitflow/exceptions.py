@@ -38,7 +38,11 @@ class MergeConflict(StatusError):
 class ObjectError(GitflowError): pass
 class BadObjectError(ObjectError): pass
 class NoSuchBranchError(ObjectError): pass
-class NoSuchRemoteError(ObjectError): pass
+
+class NoSuchRemoteError(ObjectError):
+    def __str__(self):
+        return ("No remote repository named '%s' found." % (self.args[0]))
+
 
 class BaseNotOnBranch(ObjectError):
     def __str__(self):
