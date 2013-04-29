@@ -49,8 +49,10 @@ class BaseNotOnBranch(ObjectError):
         return ("Given base '%s' is not a valid commit on '%s'."
                 % (self.args[1], self.args[0]))
 
+class BranchExistsError(ObjectError):
+    def __str__(self):
+        return ("A branch named '%s' already exists." % self.args[0])
 
-class BranchExistsError(ObjectError):pass
 class TagExistsError(ObjectError): pass
 
 class BranchTypeExistsError(ObjectError):
