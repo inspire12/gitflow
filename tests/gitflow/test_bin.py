@@ -8,10 +8,7 @@
 import sys
 import re
 from functools import wraps
-try:
-    from cStringIO import StringIO
-except:
-    from StringIO import StringIO
+from io import StringIO
 
 from unittest2 import TestCase
 
@@ -34,6 +31,7 @@ from tests.helpers.factory import create_sandbox, create_git_repo
 __copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel"
 __license__ = "BSD"
 
+
 def runGitFlow(*argv, **kwargs):
     capture = kwargs.get('capture', False)
     _argv, sys.argv = sys.argv, ['git-flow'] + list(argv)
@@ -51,17 +49,18 @@ def runGitFlow(*argv, **kwargs):
 
 
 class TestCase(TestCase):
-    def assertArgparseError(self, expected_regexp, func, *args, **kwargs):
+    def assert_argparse_error(self, expected_regexp, func, *args, **kwargs):
         _stderr, sys.stderr = sys.stderr, StringIO()
         try:
             self.assertRaises(SystemExit, func, *args, **kwargs)
             msg = sys.stderr.getvalue()
-            expected_regexp = re.compile(expected_regexp)
-            if not expected_regexp.search(str(msg)):
-                raise self.failureException('"%s" does not match "%s"' %
-                         (expected_regexp.pattern, msg))
+            if expected_regexp:
+                expected_regexp = re.compile(expected_regexp)
+                if not expected_regexp.search(str(msg)):
+                    raise self.failureException('"%s" does not match "%s"' % (expected_regexp.pattern, msg))
         finally:
             sys.stderr = _stderr
+
 
 class TestVersionCommand(TestCase):
 
@@ -99,7 +98,7 @@ class TestInitCommand(TestCase):
 
     @sandboxed
     def test_init_accepting_defaults(self):
-        text = '\n'*8
+        text = u'\n' * 8
         _stdin, sys.stdin = sys.stdin, StringIO(text)
         try:
             runGitFlow('init')
@@ -117,7 +116,7 @@ class TestInitCommand(TestCase):
 
     @sandboxed
     def test_init_custom(self):
-        text = '\n'.join(['my-remote', 'stable', 'devel',
+        text = u'\n'.join(['my-remote', 'stable', 'devel',
                           'feat/', 'rel/', 'hf/', 'sup/', 'ver'])
         _stdin, sys.stdin = sys.stdin, StringIO(text)
         try:
@@ -136,7 +135,7 @@ class TestInitCommand(TestCase):
 
     @sandboxed
     def test_init_custom_accepting_some_defaults(self):
-        text = '\n'.join(['my-remote', '', 'devel',
+        text = u'\n'.join(['my-remote', '', 'devel',
                           'feat/', '', '', 'sup/', 'v'])
         _stdin, sys.stdin = sys.stdin, StringIO(text)
         try:
@@ -175,7 +174,7 @@ class TestInitCommand(TestCase):
 
     @copy_from_fixture('custom_repo')
     def test_init_existing_repo_fails_on_non_existing_master_branch(self):
-        text = '\n'.join(['', 'stable', '', '', '', '', '', ''])
+        text = u'\n'.join(['', 'stable', '', '', '', '', '', ''])
         _stdin, sys.stdin = sys.stdin, StringIO(text)
         try:
             self.assertRaises(NoSuchBranchError, runGitFlow, 'init', '--force')
@@ -184,7 +183,7 @@ class TestInitCommand(TestCase):
 
     @copy_from_fixture('custom_repo')
     def test_init_existing_repo_fails_on_non_existing_develop_branch(self):
-        text = '\n'.join(['', '', 'workinprogress', '', '', '', '', ''])
+        text = u'\n'.join(['', '', 'workinprogress', '', '', '', '', ''])
         _stdin, sys.stdin = sys.stdin, StringIO(text)
         try:
             self.assertRaises(NoSuchBranchError, runGitFlow, 'init', '--force')
@@ -194,7 +193,7 @@ class TestInitCommand(TestCase):
     @copy_from_fixture('custom_repo')
     def test_init_force_succeeds_if_already_initialized(self):
         # NB: switching master and develop
-        text = '\n'.join(['my-remote', 'master', 'production',
+        text = u'\n'.join(['my-remote', 'master', 'production',
                           'feat/', 'rel/', 'hf/', 'sup/', 'ver'])
         _stdin, sys.stdin = sys.stdin, StringIO(text)
         try:
@@ -207,7 +206,7 @@ class TestInitCommand(TestCase):
 
     @sandboxed
     def test_init_fails_if_develop_name_equals_master_name(self):
-        text = '\n'.join(['', 'mainbranch', 'mainbranch'])
+        text = u'\n'.join(['', 'mainbranch', 'mainbranch'])
         _stdin, sys.stdin = sys.stdin, StringIO(text)
         try:
             self.assertRaisesRegexp(SystemExit, ".*branches should differ.*",
@@ -215,11 +214,10 @@ class TestInitCommand(TestCase):
         finally:
             sys.stdin = _stdin
 
-
     @remote_clone_from_fixture('sample_repo')
     def test_init_with_master_existing_remote_but_not_local(self):
         rsc0 = self.remote.branches['stable'].commit
-        text = '\n'.join(['my-remote', 'stable', 'devel',
+        text = u'\n'.join(['my-remote', 'stable', 'devel',
                           'feat/', 'rel/', 'hf/', 'sup/', 'ver'])
         _stdin, sys.stdin = sys.stdin, StringIO(text)
         try:
@@ -231,13 +229,10 @@ class TestInitCommand(TestCase):
         self.assertEqual(rsc0, rsc1)
         self.assertEqual(rsc1, lsc1)
 
-
     # These tests need a repo with only branches `foo` and `bar`
     # or other names not selected for defaults
     # :todo: give no master branch name (or white-spaces)
     # :todo: give no develop branch name (or white-spaces)
-
-
     @remote_clone_from_fixture('sample_repo')
     def test_subcommands_requiring_initialized_repo(self):
         def assertSystemExit(*args):
@@ -261,18 +256,18 @@ class TestFeature(TestCase):
     def test_feature_list(self):
         stdout = runGitFlow('feature', 'list', capture=1)
         expected = [
-          '  even',
-          '* recursion'
-          ]
+            '  even',
+            '* recursion'
+        ]
         self.assertEqual(stdout.splitlines(), expected)
 
     @copy_from_fixture('sample_repo')
     def test_feature_list_verbose(self):
         stdout = runGitFlow('feature', 'list', '--verbose', capture=1)
         expected = [
-          '  even      (based on latest devel)',
-          '* recursion (based on latest devel)'
-          ]
+            '  even      (based on latest devel)',
+            '* recursion (based on latest devel)'
+        ]
         self.assertEqual(stdout.splitlines(), expected)
 
     @copy_from_fixture('sample_repo')
@@ -281,9 +276,9 @@ class TestFeature(TestCase):
         fake_commit(self.repo, 'A commit on devel')
         stdout = runGitFlow('feature', 'list', '--verbose', capture=1)
         expected = [
-          '  even      (may be rebased)',
-          '  recursion (may be rebased)'
-          ]
+            '  even      (may be rebased)',
+            '  recursion (may be rebased)'
+        ]
         self.assertEqual(stdout.splitlines(), expected)
 
     @sandboxed
@@ -331,14 +326,14 @@ class TestFeature(TestCase):
 
     @copy_from_fixture('sample_repo')
     def test_feature_start_empty_name(self):
-        self.assertArgparseError('must not by empty',
+        self.assert_argparse_error('must not by empty',
                                  runGitFlow, 'feature', 'start', '')
-        self.assertArgparseError('must not by empty',
+        self.assert_argparse_error('must not by empty',
                                  runGitFlow, 'feature', 'start', '', 'devel')
 
     @copy_from_fixture('sample_repo')
     def test_feature_start_no_name(self):
-        self.assertArgparseError('too few arguments',
+        self.assert_argparse_error(None,
                                  runGitFlow, 'feature', 'start')
 
     #--- feature finish ---
@@ -430,9 +425,9 @@ class TestFeature(TestCase):
     @remote_clone_from_fixture('sample_repo')
     def test_feature_track_name_is_required(self):
         GitFlow('.').init()
-        self.assertArgparseError('too few arguments',
+        self.assert_argparse_error(None,
                                  runGitFlow, 'feature', 'track')
-        self.assertArgparseError('must not by empty',
+        self.assert_argparse_error('must not by empty',
                                  runGitFlow, 'feature', 'track', '')
 
     #--- feature diff ---
@@ -479,12 +474,12 @@ class TestFeature(TestCase):
 
     @copy_from_fixture('sample_repo')
     def test_feature_checkout_current(self):
-        self.assertArgparseError('too few arguments',
+        self.assert_argparse_error(None,
                                  runGitFlow, 'feature', 'checkout')
 
     @copy_from_fixture('sample_repo')
     def test_feature_checkout_empty_prefix(self):
-        self.assertArgparseError('must not by empty',
+        self.assert_argparse_error('must not by empty',
                                  runGitFlow, 'feature', 'checkout', '')
 
     @copy_from_fixture('sample_repo')
@@ -501,7 +496,7 @@ class TestFeature(TestCase):
     @remote_clone_from_fixture('sample_repo')
     def test_feature_pull_empty_remote_raises_error(self):
         GitFlow('.').init()
-        self.assertArgparseError('must not by empty',
+        self.assert_argparse_error('must not by empty',
                                  runGitFlow, 'feature', 'pull', '', 'even')
 
     @remote_clone_from_fixture('sample_repo')
@@ -557,12 +552,12 @@ class TestRelease(TestCase):
 
     @copy_from_fixture('release')
     def test_release_start_empty_name(self):
-        self.assertArgparseError('must not by empty',
+        self.assert_argparse_error('must not by empty',
                                  runGitFlow, 'release', 'start', '')
 
     @copy_from_fixture('release')
     def test_release_start_no_name(self):
-        self.assertArgparseError('too few arguments',
+        self.assert_argparse_error(None,
                                  runGitFlow, 'release', 'start')
 
     #--- release finish ---
@@ -641,27 +636,27 @@ class TestRelease(TestCase):
     @remote_clone_from_fixture('sample_repo')
     def test_release_track_name_is_required(self):
         GitFlow('.').init()
-        self.assertArgparseError('too few arguments',
+        self.assert_argparse_error(None,
                                  runGitFlow, 'release', 'track')
-        self.assertArgparseError('must not by empty',
+        self.assert_argparse_error('must not by empty',
                                  runGitFlow, 'release', 'track', '')
 
     #--- unsupported `release` subcommands ---
 
     def test_release_diff_is_no_valid_subcommand(self):
-        self.assertArgparseError("invalid choice: 'diff'",
+        self.assert_argparse_error("invalid choice: 'diff'",
                                  runGitFlow, 'release', 'diff')
 
     def test_release_rebase_is_no_valid_subcommand(self):
-        self.assertArgparseError("invalid choice: 'rebase'",
+        self.assert_argparse_error("invalid choice: 'rebase'",
                                  runGitFlow, 'release', 'rebase')
 
     def test_release_checkout_is_no_valid_subcommand(self):
-        self.assertArgparseError("invalid choice: 'checkout'",
+        self.assert_argparse_error("invalid choice: 'checkout'",
                                  runGitFlow, 'release', 'checkout')
 
     def test_release_pull_is_no_valid_subcommand(self):
-        self.assertArgparseError("invalid choice: 'pull'",
+        self.assert_argparse_error("invalid choice: 'pull'",
                                  runGitFlow, 'release', 'pull')
 
 
@@ -715,12 +710,12 @@ class TestHotfix(TestCase):
 
     @copy_from_fixture('sample_repo')
     def test_hotfix_start_empty_name(self):
-        self.assertArgparseError('must not by empty',
+        self.assert_argparse_error('must not by empty',
                                  runGitFlow, 'hotfix', 'start', '')
 
     @copy_from_fixture('sample_repo')
     def test_hotfix_start_no_name(self):
-        self.assertArgparseError('too few arguments',
+        self.assert_argparse_error(None,
                                  runGitFlow, 'hotfix', 'start')
 
     #--- hotfix finish ---
@@ -792,23 +787,23 @@ class TestHotfix(TestCase):
     #--- unsupported `hotfix` subcommands ---
 
     def test_hotfix_track_is_no_valid_subcommand(self):
-        self.assertArgparseError("invalid choice: 'track'",
+        self.assert_argparse_error("invalid choice: 'track'",
                                  runGitFlow, 'hotfix', 'track')
 
     def test_hotfix_diff_is_no_valid_subcommand(self):
-        self.assertArgparseError("invalid choice: 'diff'",
+        self.assert_argparse_error("invalid choice: 'diff'",
                                  runGitFlow, 'hotfix', 'diff')
 
     def test_hotfix_rebase_is_no_valid_subcommand(self):
-        self.assertArgparseError("invalid choice: 'rebase'",
+        self.assert_argparse_error("invalid choice: 'rebase'",
                                  runGitFlow, 'hotfix', 'rebase')
 
     def test_hotfix_checkout_is_no_valid_subcommand(self):
-        self.assertArgparseError("invalid choice: 'checkout'",
+        self.assert_argparse_error("invalid choice: 'checkout'",
                                  runGitFlow, 'hotfix', 'checkout')
 
     def test_hotfix_pull_is_no_valid_subcommand(self):
-        self.assertArgparseError("invalid choice: 'pull'",
+        self.assert_argparse_error("invalid choice: 'pull'",
                                  runGitFlow, 'hotfix', 'pull')
 
 class TestSupport(TestCase):
@@ -861,37 +856,37 @@ class TestSupport(TestCase):
 
     @copy_from_fixture('sample_repo')
     def test_support_start_empty_name(self):
-        self.assertArgparseError('must not by empty',
+        self.assert_argparse_error('must not by empty',
                                  runGitFlow, 'support', 'start', '')
 
     @copy_from_fixture('sample_repo')
     def test_support_start_no_name(self):
-        self.assertArgparseError('too few arguments',
+        self.assert_argparse_error(None,
                                  runGitFlow, 'support', 'start')
 
 
     #--- unsupported `support` subcommands ---
 
     def test_support_publish_is_no_valid_subcommand(self):
-        self.assertArgparseError("invalid choice: 'finish'",
+        self.assert_argparse_error("invalid choice: 'finish'",
                                  runGitFlow, 'support', 'finish')
 
     def test_support_track_is_no_valid_subcommand(self):
-        self.assertArgparseError("invalid choice: 'track'",
+        self.assert_argparse_error("invalid choice: 'track'",
                                  runGitFlow, 'support', 'track')
 
     def test_support_diff_is_no_valid_subcommand(self):
-        self.assertArgparseError("invalid choice: 'diff'",
+        self.assert_argparse_error("invalid choice: 'diff'",
                                  runGitFlow, 'support', 'diff')
 
     def test_support_rebase_is_no_valid_subcommand(self):
-        self.assertArgparseError("invalid choice: 'rebase'",
+        self.assert_argparse_error("invalid choice: 'rebase'",
                                  runGitFlow, 'support', 'rebase')
 
     def test_support_checkout_is_no_valid_subcommand(self):
-        self.assertArgparseError("invalid choice: 'checkout'",
+        self.assert_argparse_error("invalid choice: 'checkout'",
                                  runGitFlow, 'support', 'checkout')
 
     def test_support_pull_is_no_valid_subcommand(self):
-        self.assertArgparseError("invalid choice: 'pull'",
+        self.assert_argparse_error("invalid choice: 'pull'",
                                  runGitFlow, 'support', 'pull')

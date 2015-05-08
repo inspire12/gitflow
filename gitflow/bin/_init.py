@@ -10,10 +10,11 @@ git-flow init
 # Copyright (c) 2012-2013 Hartmut Goebel
 # Distributed under a BSD-like license. For full terms see the file LICENSE.txt
 #
+from builtins import input
 
 from gitflow.core import GitFlow as CoreGitFlow, warn, info
 
-from gitflow.exceptions import AlreadyInitialized, NotInitialized
+from gitflow.exceptions import AlreadyInitialized, NotInitialized, NoSuchLocalBranchError
 
 __copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel"
 __license__ = "BSD"
@@ -71,7 +72,7 @@ def _ask_branch(args, name, desc1, desc2, suggestions, filter=[]):
         print("Branch name for %s:" % desc2, default_suggestion)
         branch_name = default_suggestion
     else:
-        answer = raw_input("Branch name for %s: [%s] "
+        answer = input("Branch name for %s: [%s] "
                            % (desc2, default_suggestion))
         branch_name = answer.strip() or default_suggestion
     if not branch_name:
@@ -102,7 +103,7 @@ def _ask_config(args, name, question):
         print(question + ':', default_suggestion)
         answer = default_suggestion
     else:
-        answer = raw_input(question + '? [' + default_suggestion + '] ')
+        answer = input(question + '? [' + default_suggestion + '] ')
         answer = answer.strip() or default_suggestion
         if answer == '-':
             answer = ''

@@ -10,7 +10,10 @@ from __future__ import (absolute_import, division, print_function,
 
 import sys
 import time
-import ConfigParser
+try:
+    from ConfigParser import NoSectionError, NoOptionError
+except ImportError:
+    from configparser import NoSectionError, NoOptionError
 from functools import wraps
 
 import git
@@ -60,7 +63,7 @@ def info(*texts):
 
 def warn(*texts):
     for txt in texts:
-        print >> sys.stderr, txt
+        print(txt, file=sys.stderr)
 
 
 class _NONE:
@@ -215,7 +218,7 @@ class GitFlow(object):
         section, option = self._parse_setting(setting)
         try:
             return self.repo.config_reader().get_value(section, option)
-        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+        except (NoSectionError, NoOptionError):
             if default is not _NONE:
                 return default
             raise
@@ -226,7 +229,10 @@ class GitFlow(object):
     @requires_repo
     def set(self, setting, value):
         section, option = self._parse_setting(setting)
-        self.repo.config_writer().set_value(section, option, value)
+        writer = self.repo.config_writer()
+        writer.set_value(section, option, value)
+        writer.release()
+        del writer
 
     def is_set(self, setting):
         return self.get(setting, None) is not None
@@ -235,7 +241,7 @@ class GitFlow(object):
     def _safe_get(self, setting_name):
         try:
             return self.get(setting_name)
-        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+        except (NoSectionError, NoOptionError):
             raise NotInitialized('This repo has not yet been initialized.')
 
     def master_name(self):
@@ -402,7 +408,7 @@ class GitFlow(object):
         """
         try:
             commit = self.repo.rev_parse(str(commit))
-        except git.BadObject:
+        except (git.BadObject, git.BadName):
             raise BadObjectError(commit)
         if isinstance(target_branch, git.RemoteReference):
             target_branch = 'remotes/' + target_branch.name
@@ -436,7 +442,7 @@ class GitFlow(object):
         try:
             commit1 = self.repo.rev_parse(branch1)
             commit2 = self.repo.rev_parse(branch2)
-        except git.BadObject as e:
+        except (git.BadObject, git.BadName) as e:
             raise NoSuchBranchError(e.args[0])
         if commit1 == commit2:
             return 0

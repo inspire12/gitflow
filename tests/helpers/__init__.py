@@ -109,6 +109,7 @@ def copy_gitflow_config(src, dest):
         if section.startswith('gitflow '):
             for item, value in reader.items(section):
                 writer.set_value(section, item, value)
+    writer.release()
     del writer
 
 def remote_clone_from_fixture(fixture_name, copy_config=True):
@@ -138,8 +139,11 @@ def remote_clone_from_fixture(fixture_name, copy_config=True):
             self.repo = self.remote.clone(clone, origin='my-remote')
             if copy_config:
                 copy_gitflow_config(self.remote, self.repo)
-            self.repo.config_writer(config_level='repository').set_value(
+            writer = self.repo.config_writer(config_level='repository')
+            writer.set_value(
                 'gitflow', 'origin', 'my-remote')
+            writer.release()
+            del writer
             os.chdir(clone)
             f(self, *args, **kwargs)
         return _inner

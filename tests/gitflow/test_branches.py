@@ -1057,24 +1057,22 @@ class TestReleaseBranchManager(TestCase):
         mgr = ReleaseBranchManager(gitflow)
         mgr.create('1.0')
         taginfo = dict(
-            message = 'Tagging version 1.0',
-            signingkey = 'Dummy Key for Gitflow testing',
-            )
+            message='Tagging version 1.0',
+            signingkey='Dummy Key for Gitflow testing',
+        )
         mgr.finish('1.0', push=True, tagging_info=taginfo)
         # tag message
         tag = self.remote.tags['v1.0'].tag
         self.assertIn('-----BEGIN PGP SIGNATURE-----', tag.message)
-
 
     def test_finish_release_rebase(self):
         repo = create_git_repo(self)
         gitflow = GitFlow(repo).init()
         mgr = ReleaseBranchManager(gitflow)
         mgr.create('1.0')
-        self.assertRaisesRegexp(
-            AssertionError, "does not make any sense",
+        self.assertRaises(
+            Exception,
             mgr.finish, '1.0', rebase=True)
-
 
     @copy_from_fixture('release')
     def test_finish_release_merge_conflict(self):
@@ -1119,9 +1117,12 @@ class TestHotfixBranchManager(TestCase):
 
     def test_defined_members(self):
         members = vars(HotfixBranchManager).keys()
-        self.assertEqual(members,
-                         ['DEFAULT_PREFIX', '__module__',
-                          'identifier', 'default_base', '__doc__'])
+        self.assertEqual(
+            sorted(members),
+            sorted([
+                'DEFAULT_PREFIX', '__module__',
+                'identifier', 'default_base', '__doc__'
+            ]))
 
     @copy_from_fixture('sample_repo')
     def test_shorten(self):

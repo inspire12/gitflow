@@ -7,11 +7,8 @@ from __future__ import (absolute_import, division, print_function,
 # Copyright (c) 2012-2013 Hartmut Goebel
 # Distributed under a BSD-like license. For full terms see the file LICENSE.txt
 #
-
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+from past.builtins import basestring
+from io import BytesIO
 
 from git import GitCommandError, Reference
 from gitflow.exceptions import (NoSuchBranchError, BranchExistsError,
@@ -267,7 +264,7 @@ class BranchManager(object):
             kwargs['message'] = message
         # `git merge` does not send the error message to stderr, thus
         # we need to capture stdout manually :-(
-        stdout = StringIO()
+        stdout = BytesIO()
         try:
             repo.git.merge(full_name, output_stream=stdout, **kwargs)
         except GitCommandError as e:
@@ -398,10 +395,11 @@ class ReleaseBranchManager(BranchManager):
         return super(ReleaseBranchManager, self).create(
             version, base, fetch=fetch, must_be_on_default_base=True)
 
-
     def finish(self, name, fetch=False, rebase=False, keep=False,
                force_delete=False, push=False, tagging_info=None):
-        assert rebase == False, "Rebasing a release branch does not make any sense."
+        if rebase:
+            raise Exception("Rebasing a release branch does not make any sense.")
+
         # require release branch to exist
         # if flag-fetch: fetch master und develop
         #   diese muessen dann gleich $ORIGIN/master bzw. $ORIGIN/develop sein

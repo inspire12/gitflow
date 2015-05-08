@@ -8,11 +8,11 @@
 from unittest2 import TestCase
 import os
 import sys
+from io import StringIO
 try:
-    import cStringIO as StringIO
-except:
-    import StringIO
-from ConfigParser import NoOptionError, NoSectionError
+    from ConfigParser import NoSectionError, NoOptionError
+except ImportError:
+    from configparser import NoSectionError, NoOptionError
 
 from git import GitCommandError
 
@@ -886,7 +886,7 @@ class TestGitFlowCommandDiff(TestCase):
     def test_gitflow_publish_creates_remote_branch(self):
         gitflow = GitFlow(self.repo).init()
         orig_stdout = sys.stdout
-        sys.stdout = StringIO.StringIO()
+        sys.stdout = StringIO()
         gitflow.diff('feature', 'recursion')
         diff = sys.stdout.getvalue()
         sys.stdout = orig_stdout
