@@ -28,6 +28,7 @@ from tests.helpers.factory import create_sandbox, create_git_repo
 __copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel"
 __license__ = "BSD"
 
+
 class TestGitFlowBasics(TestCase):
 
     # Configuration
@@ -35,11 +36,11 @@ class TestGitFlowBasics(TestCase):
     def test_config_reader(self):
         gitflow = GitFlow(self.repo).init()
         self.assertRaises(ValueError, gitflow.get,
-                'invalid_setting_since_this_has_no_dot')
+                          'invalid_setting_since_this_has_no_dot')
         self.assertRaises(NoSectionError, gitflow.get,
-                'nonexisting.nonexisting')
+                          'nonexisting.nonexisting')
         self.assertRaises(NoSectionError, gitflow.get,
-                'section.subsection.propname')
+                          'section.subsection.propname')
         self.assertRaises(NoOptionError, gitflow.get, 'foo.nonexisting')
         self.assertEquals('qux', gitflow.get('foo.bar'))
 
@@ -54,7 +55,6 @@ class TestGitFlowBasics(TestCase):
         self.assertEquals('hf-', gitflow.get_prefix('hotfix'))
         self.assertEquals('supp-', gitflow.get_prefix('support'))
         self.assertEquals('v', gitflow.get_prefix('versiontag'))
-
 
     # Initialization
     def test_branch_names_fails_in_new_sandbox(self):
@@ -71,7 +71,7 @@ class TestGitFlowBasics(TestCase):
     def test_custom_repo_has_branches(self):
         gitflow = GitFlow(self.repo).init()
         self.assertItemsEqual(['master', 'production'],
-                gitflow.branch_names())
+                              gitflow.branch_names())
 
     @copy_from_fixture('custom_repo')
     def test_custom_repo_init_keeps_active_branch_if_develop_already_existed(self):
@@ -119,12 +119,11 @@ class TestGitFlowBasics(TestCase):
     def test_gitflow_status_on_sample_repo(self):
         gitflow = GitFlow(self.repo)
         self.assertItemsEqual([
-                ('stable', '296586bb164c946cad10d37e82570f60e6348df9', False),
-                ('devel', '2b34cd2e1617e5f0d4e077c6ec092b9f50ed49a3', False),
-                ('feat/recursion', '54d59c872469c7bf34d540d2fb3128a97502b73f', True),
-                ('feat/even', 'e56be18dada9e81ca7969760ddea357b0c4c9412', False),
-            ], gitflow.status())
-
+            ('stable', '296586bb164c946cad10d37e82570f60e6348df9', False),
+            ('devel', '2b34cd2e1617e5f0d4e077c6ec092b9f50ed49a3', False),
+            ('feat/recursion', '54d59c872469c7bf34d540d2fb3128a97502b73f', True),
+            ('feat/even', 'e56be18dada9e81ca7969760ddea357b0c4c9412', False),
+        ], gitflow.status())
 
     @remote_clone_from_fixture('sample_repo')
     def test_gitflow_status_on_cloned_sample_repo(self):
@@ -132,19 +131,18 @@ class TestGitFlowBasics(TestCase):
         # NB: only the active branch is created locally when cloning
         self.assertEqual(self.remote.active_branch.name, 'feat/recursion')
         self.assertItemsEqual([
-                ('feat/recursion', '54d59c872469c7bf34d540d2fb3128a97502b73f', True),
-            ], gitflow.status())
+            ('feat/recursion', '54d59c872469c7bf34d540d2fb3128a97502b73f', True),
+        ], gitflow.status())
 
     @remote_clone_from_fixture('sample_repo')
     def test_gitflow_status_on_remote_sample_repo(self):
         gitflow = GitFlow(self.remote)
         self.assertItemsEqual([
-                ('stable', '296586bb164c946cad10d37e82570f60e6348df9', False),
-                ('devel', '2b34cd2e1617e5f0d4e077c6ec092b9f50ed49a3', False),
-                ('feat/recursion', '54d59c872469c7bf34d540d2fb3128a97502b73f', True),
-                ('feat/even', 'e56be18dada9e81ca7969760ddea357b0c4c9412', False),
-            ], gitflow.status())
-
+            ('stable', '296586bb164c946cad10d37e82570f60e6348df9', False),
+            ('devel', '2b34cd2e1617e5f0d4e077c6ec092b9f50ed49a3', False),
+            ('feat/recursion', '54d59c872469c7bf34d540d2fb3128a97502b73f', True),
+            ('feat/even', 'e56be18dada9e81ca7969760ddea357b0c4c9412', False),
+        ], gitflow.status())
 
     @remote_clone_from_fixture('sample_repo')
     def test_gitflow_cloned_sample_repo_is_not_remote(self):
@@ -178,6 +176,7 @@ class TestGitFlowBasics(TestCase):
         gitflow = GitFlow(sandbox).init()
         self.assertRaises(NoSuchRemoteError,
                           gitflow.require_remote, 'some-remote')
+
 
 class TestGitFlowInit(TestCase):
     # git flow init
@@ -252,7 +251,6 @@ class TestGitFlowInit(TestCase):
         self.assertEquals('support/', gitflow.get_prefix('support'))
         self.assertEquals('', gitflow.get_prefix('versiontag'))
 
-
     @copy_from_fixture('sample_repo')
     def test_gitflow_init_keeps_active_branch_if_develop_already_existed(self):
         active_branch = self.repo.active_branch.name
@@ -267,28 +265,28 @@ class TestGitFlowInit(TestCase):
     @copy_from_fixture('sample_repo')
     def test_gitflow_init_creates_no_extra_commits(self):
         all_commits_before_init = all_commits(self.repo)
-        gitflow = GitFlow(self.repo).init()
+        GitFlow(self.repo).init()
         all_commits_after_init = all_commits(self.repo)
         self.assertEquals(all_commits_before_init, all_commits_after_init)
 
     @remote_clone_from_fixture('sample_repo')
     def test_gitflow_init_cloned_creates_no_extra_commits(self):
         all_commits_before_init = all_commits(self.repo)
-        gitflow = GitFlow(self.repo).init()
+        GitFlow(self.repo).init()
         all_commits_after_init = all_commits(self.repo)
         self.assertEquals(all_commits_before_init, all_commits_after_init)
 
     @copy_from_fixture('sample_repo')
     def test_gitflow_init_creates_no_extra_branches(self):
         heads_before_init = [h.name for h in self.repo.heads]
-        gitflow = GitFlow(self.repo).init()
+        GitFlow(self.repo).init()
         heads_after_init = [h.name for h in self.repo.heads]
         self.assertItemsEqual(heads_before_init, heads_after_init)
 
     def test_gitflow_init_creates_initial_commit(self):
         repo = create_git_repo(self)
         all_commits_before_init = all_commits(repo)
-        gitflow = GitFlow(repo).init()
+        GitFlow(repo).init()
         all_commits_after_init = all_commits(repo)
         self.assertNotEquals(all_commits_before_init, all_commits_after_init)
         self.assertEquals('Initial commit', repo.heads.master.commit.message)
@@ -297,14 +295,14 @@ class TestGitFlowInit(TestCase):
         repo = create_git_repo(self)
         gitflow = GitFlow(repo).init()
         self.assertItemsEqual(['master', 'develop'],
-                gitflow.branch_names())
+                              gitflow.branch_names())
 
     @remote_clone_from_fixture('sample_repo')
     def test_gitflow_init_cloned_creates_master_and_develop(self):
         heads_before_init = [h.name for h in self.repo.heads]
         self.assertNotIn('stable', heads_before_init)
         self.assertNotIn('devel', heads_before_init)
-        gitflow = GitFlow(self.repo).init()
+        GitFlow(self.repo).init()
         heads_after_init = [h.name for h in self.repo.heads]
         self.assertIn('stable', heads_after_init)
         self.assertIn('devel', heads_after_init)
@@ -320,7 +318,7 @@ class TestGitFlowInit(TestCase):
 
     @remote_clone_from_fixture('sample_repo')
     def test_gitflow_init_cloned_creates_branches_from_counterpart(self):
-        remote =  GitFlow(self.remote)
+        remote = GitFlow(self.remote)
         rmc0 = remote.master().commit
         rdc0 = remote.develop().commit
 
@@ -336,12 +334,10 @@ class TestGitFlowInit(TestCase):
         self.assertEqual(gitflow.master().tracking_branch().name, 'my-remote/stable')
         self.assertEqual(gitflow.develop().tracking_branch().name, 'my-remote/devel')
 
-
     @remote_clone_from_fixture('sample_repo')
     def test_gitflow_init_cloned_creates_no_extra_banches(self):
-        heads_before_init = [h.name for h in self.repo.heads]
-        heads_before_init.sort()
-        gitflow = GitFlow(self.repo).init()
+        heads_before_init = sorted([h.name for h in self.repo.heads])
+        GitFlow(self.repo).init()
         heads_after_init = [h.name for h in self.repo.heads]
         heads_after_init.remove('stable')
         heads_after_init.remove('devel')
@@ -430,10 +426,10 @@ class TestGitFlowTag(TestCase):
         self.assertEqual(tag.tag, 'some-tag')
         self.assertEqual(tag.object, commit)
 
-
     # :todo: test-cases for must_be_uptodate
     # :todo: test-cases for branch_names(remote=True)
     # :todo: test-cases for list (one per BranchManager)
+
 
 class TestGitFlowMerges(TestCase):
 
@@ -458,7 +454,7 @@ class TestGitFlowMerges(TestCase):
     def test_gitflow_is_merged_into_non_existing_source(self):
         gitflow = GitFlow(self.repo).init()
         self.assertRaisesRegexp(BadObjectError, 'feat/ever',
-                          gitflow.is_merged_into ,'feat/ever', 'devel')
+                                gitflow.is_merged_into, 'feat/ever', 'devel')
 
     @remote_clone_from_fixture('sample_repo')
     def test_gitflow_is_merged_into_remote(self):
@@ -493,7 +489,7 @@ class TestGitFlowMerges(TestCase):
             'remotes/my-remote/feat/recursion',
             gitflow.origin().refs['devel']))
 
-    #:todo: test-case is_merged_into_remote with remote branch beeing ahead
+    # :todo: test-case is_merged_into_remote with remote branch beeing ahead
     #       of corresponding local branch
 
     @copy_from_fixture('sample_repo')
@@ -517,6 +513,7 @@ class TestGitFlowMerges(TestCase):
 
 
 class TestGitFlowCheckout(TestCase):
+
     @copy_from_fixture('sample_repo')
     def test_gitflow_nameprefix_or_current_defaults_to_current(self):
         gitflow = GitFlow(self.repo).init()
@@ -528,7 +525,7 @@ class TestGitFlowCheckout(TestCase):
 
 class TestGitFlowBranches(TestCase):
 
-    #-- nameprefix_or_current
+    # -- nameprefix_or_current
 
     @copy_from_fixture('sample_repo')
     def test_gitflow_nameprefix_or_current_defaults_to_current(self):
@@ -559,9 +556,9 @@ class TestGitFlowBranches(TestCase):
         # gitflow.init checks out `devel` branch :-(
         self.repo.branches['feat/recursion'].checkout()
         self.assertEqual('even',
-            gitflow.name_or_current('feature', 'even'))
+                         gitflow.name_or_current('feature', 'even'))
 
-    #-- name_or_current
+    # -- name_or_current
 
     @copy_from_fixture('sample_repo')
     def test_gitflow_name_or_current_defaults_to_current(self):
@@ -593,9 +590,9 @@ class TestGitFlowBranches(TestCase):
         # gitflow.init checks out `devel` branch :-(
         self.repo.branches['feat/recursion'].checkout()
         self.assertEqual('even',
-            gitflow.name_or_current('feature', 'even'))
+                         gitflow.name_or_current('feature', 'even'))
         self.assertEqual('xxxx',
-            gitflow.name_or_current('feature', 'xxxx', must_exist=False))
+                         gitflow.name_or_current('feature', 'xxxx', must_exist=False))
 
 
 class TestGitFlowCommandCreate(TestCase):
@@ -607,6 +604,7 @@ class TestGitFlowCommandCreate(TestCase):
         gitflow = GitFlow(sandbox).init()
         gitflow.create('feature', 'wow-feature', base=None, fetch=False)
         self.assertIn('feature/wow-feature', gitflow.repo.branches)
+
 
 class TestGitFlowCommandFinish(TestCase):
 
@@ -781,7 +779,7 @@ class TestGitFlowCommandPull(TestCase):
     def test_gitflow_pull_existing_branch_while_on_other_branchtype_raises_error(self):
         gitflow = GitFlow(self.repo).init()
         # create local branch based on first commit
-        new_branch = self.repo.create_head('feat/even', 'stable')
+        self.repo.create_head('feat/even', 'stable')
         self.assertRaisesRegexp(
             SystemExit, "To avoid unintended merges, git-flow aborted.",
             gitflow.pull, 'feature', 'my-remote', 'even')
@@ -800,7 +798,7 @@ class TestGitFlowCommandPull(TestCase):
 
     @remote_clone_from_fixture('sample_repo')
     def test_gitflow_pull_non_existing_feature_raises_error(self):
-        all_remote_commits_before_change = all_commits(self.remote)
+        all_commits(self.remote)
         gitflow = GitFlow(self.repo).init()
         self.assertRaisesRegexp(
             GitCommandError, "Couldn't find remote ref ",
@@ -896,7 +894,7 @@ class TestGitFlowCommandDiff(TestCase):
             'index 607a269..8a0c7ff 100644',
             '--- a/odd.py',
             '+++ b/odd.py',
-            ]
+        ]
         self.assertEqual(difflines[:len(matchlines)], matchlines)
 
 
@@ -916,6 +914,7 @@ class TestGitFlowBranchManagement(TestCase):
     def test_detect_custom_branch_types(self):
         create_git_repo(self)
         # Declare a custom branch type inline
+
         class FooBarManager(BranchManager):
             identifier = 'foobar'
             DEFAULT_PREFIX = 'xyz/'
@@ -937,22 +936,21 @@ class TestGitFlowBranchManagement(TestCase):
         gitflow = GitFlow(repo).init()
         gitflow.create('feature', 'foo', None, fetch=False)
         self.assertIn('feature/foo',
-                [h.name for h in gitflow.repo.branches])
+                      [h.name for h in gitflow.repo.branches])
         gitflow.create('release', '1.0', None, fetch=False)
         self.assertIn('release/1.0',
-                [h.name for h in gitflow.repo.branches])
+                      [h.name for h in gitflow.repo.branches])
 
     def _test_create_branches_from_alt_base(self):
         repo = create_git_repo(self)
         gitflow = GitFlow(repo).init()
         gitflow.create('feature', 'foo', 'master', fetch=False)
         self.assertIn('feature/foo',
-                [h.name for h in gitflow.repo.branches])
+                      [h.name for h in gitflow.repo.branches])
         gitflow.repo.index.commit('Foo')
         gitflow.create('release', '1.0', 'feature/foo', fetch=False)
         self.assertIn('release/1.0',
-                [h.name for h in gitflow.repo.branches])
-
+                      [h.name for h in gitflow.repo.branches])
 
     """
     Use case:
@@ -974,4 +972,3 @@ class TestGitFlowBranchManagement(TestCase):
     $ git flow abort       # new!
 
     """
-

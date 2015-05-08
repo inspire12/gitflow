@@ -7,7 +7,6 @@
 
 import sys
 import re
-from functools import wraps
 from io import StringIO
 
 from unittest2 import TestCase
@@ -17,22 +16,16 @@ from gitflow.core import GitFlow, Repo
 from gitflow.exceptions import (NoSuchBranchError, NoSuchRemoteError,
                                 AlreadyInitialized, NotInitialized,
                                 BaseNotOnBranch)
-from gitflow.bin import (main as Main,
-                         VersionCommand, StatusCommand, InitCommand,
-                         FeatureCommand, ReleaseCommand, HotfixCommand,
-                         SupportCommand
-                         )
 
-from gitflow.branches import BranchManager
 from tests.helpers import (copy_from_fixture, remote_clone_from_fixture,
-                           all_commits, sandboxed, fake_commit)
-from tests.helpers.factory import create_sandbox, create_git_repo
+                           sandboxed, fake_commit)
+from tests.helpers.factory import create_git_repo
 
 __copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel"
 __license__ = "BSD"
 
 
-def runGitFlow(*argv, **kwargs):
+def run_git_flow(*argv, **kwargs):
     capture = kwargs.get('capture', False)
     _argv, sys.argv = sys.argv, ['git-flow'] + list(argv)
     _stdout = sys.stdout
@@ -49,6 +42,7 @@ def runGitFlow(*argv, **kwargs):
 
 
 class TestCase(TestCase):
+
     def assert_argparse_error(self, expected_regexp, func, *args, **kwargs):
         _stderr, sys.stderr = sys.stderr, StringIO()
         try:
@@ -65,27 +59,28 @@ class TestCase(TestCase):
 class TestVersionCommand(TestCase):
 
     def test_version(self):
-        stdout = runGitFlow('version', capture=1)
-        self.assertEqual(gitflow.__version__+'\n', stdout)
+        stdout = run_git_flow('version', capture=1)
+        self.assertEqual(gitflow.__version__ + '\n', stdout)
 
 
 class TestStatusCommand(TestCase):
 
     @copy_from_fixture('sample_repo')
     def test_version(self):
-        stdout = runGitFlow('status', capture=1)
+        stdout = run_git_flow('status', capture=1)
         self.assertItemsEqual([
             '  devel: 2b34cd2',
             '  feat/even: e56be18',
             '* feat/recursion: 54d59c8',
             '  stable: 296586b',
-            ], stdout.splitlines())
+        ], stdout.splitlines())
 
 
 class TestInitCommand(TestCase):
+
     @sandboxed
     def test_init_defaults(self):
-        runGitFlow('init', '--defaults')
+        run_git_flow('init', '--defaults')
         gitflow = GitFlow('.').init()
         self.assertEquals('origin', gitflow.origin_name())
         self.assertEquals('master', gitflow.master_name())
@@ -101,7 +96,7 @@ class TestInitCommand(TestCase):
         text = u'\n' * 8
         _stdin, sys.stdin = sys.stdin, StringIO(text)
         try:
-            runGitFlow('init')
+            run_git_flow('init')
         finally:
             sys.stdin = _stdin
         gitflow = GitFlow('.').init()
@@ -117,10 +112,10 @@ class TestInitCommand(TestCase):
     @sandboxed
     def test_init_custom(self):
         text = u'\n'.join(['my-remote', 'stable', 'devel',
-                          'feat/', 'rel/', 'hf/', 'sup/', 'ver'])
+                           'feat/', 'rel/', 'hf/', 'sup/', 'ver'])
         _stdin, sys.stdin = sys.stdin, StringIO(text)
         try:
-            runGitFlow('init')
+            run_git_flow('init')
         finally:
             sys.stdin = _stdin
         gitflow = GitFlow('.').init()
@@ -136,10 +131,10 @@ class TestInitCommand(TestCase):
     @sandboxed
     def test_init_custom_accepting_some_defaults(self):
         text = u'\n'.join(['my-remote', '', 'devel',
-                          'feat/', '', '', 'sup/', 'v'])
+                           'feat/', '', '', 'sup/', 'v'])
         _stdin, sys.stdin = sys.stdin, StringIO(text)
         try:
-            runGitFlow('init')
+            run_git_flow('init')
         finally:
             sys.stdin = _stdin
         gitflow = GitFlow('.').init()
@@ -152,15 +147,13 @@ class TestInitCommand(TestCase):
         self.assertEquals('sup/', gitflow.get_prefix('support'))
         self.assertEquals('v', gitflow.get_prefix('versiontag'))
 
-
     @copy_from_fixture('custom_repo')
     def test_init_fails_if_already_initialized(self):
-        self.assertRaises(AlreadyInitialized, runGitFlow, 'init')
-
+        self.assertRaises(AlreadyInitialized, run_git_flow, 'init')
 
     @copy_from_fixture('custom_repo')
     def test_init_force_defaults_succeeds_if_already_initialized(self):
-        runGitFlow('init', '--defaults', '--force')
+        run_git_flow('init', '--defaults', '--force')
         gitflow = GitFlow('.').init()
         # these are the values already defined in custom_repo
         self.assertEquals('origin', gitflow.origin_name())
@@ -177,7 +170,7 @@ class TestInitCommand(TestCase):
         text = u'\n'.join(['', 'stable', '', '', '', '', '', ''])
         _stdin, sys.stdin = sys.stdin, StringIO(text)
         try:
-            self.assertRaises(NoSuchBranchError, runGitFlow, 'init', '--force')
+            self.assertRaises(NoSuchBranchError, run_git_flow, 'init', '--force')
         finally:
             sys.stdin = _stdin
 
@@ -186,7 +179,7 @@ class TestInitCommand(TestCase):
         text = u'\n'.join(['', '', 'workinprogress', '', '', '', '', ''])
         _stdin, sys.stdin = sys.stdin, StringIO(text)
         try:
-            self.assertRaises(NoSuchBranchError, runGitFlow, 'init', '--force')
+            self.assertRaises(NoSuchBranchError, run_git_flow, 'init', '--force')
         finally:
             sys.stdin = _stdin
 
@@ -194,10 +187,10 @@ class TestInitCommand(TestCase):
     def test_init_force_succeeds_if_already_initialized(self):
         # NB: switching master and develop
         text = u'\n'.join(['my-remote', 'master', 'production',
-                          'feat/', 'rel/', 'hf/', 'sup/', 'ver'])
+                           'feat/', 'rel/', 'hf/', 'sup/', 'ver'])
         _stdin, sys.stdin = sys.stdin, StringIO(text)
         try:
-            runGitFlow('init', '--force')
+            run_git_flow('init', '--force')
         finally:
             sys.stdin = _stdin
         gitflow = GitFlow('.').init()
@@ -210,7 +203,7 @@ class TestInitCommand(TestCase):
         _stdin, sys.stdin = sys.stdin, StringIO(text)
         try:
             self.assertRaisesRegexp(SystemExit, ".*branches should differ.*",
-                                    runGitFlow, 'init')
+                                    run_git_flow, 'init')
         finally:
             sys.stdin = _stdin
 
@@ -218,10 +211,10 @@ class TestInitCommand(TestCase):
     def test_init_with_master_existing_remote_but_not_local(self):
         rsc0 = self.remote.branches['stable'].commit
         text = u'\n'.join(['my-remote', 'stable', 'devel',
-                          'feat/', 'rel/', 'hf/', 'sup/', 'ver'])
+                           'feat/', 'rel/', 'hf/', 'sup/', 'ver'])
         _stdin, sys.stdin = sys.stdin, StringIO(text)
         try:
-            runGitFlow('init', '--force')
+            run_git_flow('init', '--force')
         finally:
             sys.stdin = _stdin
         rsc1 = self.remote.branches['stable'].commit
@@ -235,26 +228,28 @@ class TestInitCommand(TestCase):
     # :todo: give no develop branch name (or white-spaces)
     @remote_clone_from_fixture('sample_repo')
     def test_subcommands_requiring_initialized_repo(self):
-        def assertSystemExit(*args):
+        def assert_system_exit(*args):
             self.assertRaisesRegexp(
                 SystemExit, 'repo has not yet been initialized for git-flow',
-                runGitFlow, 'feature', *args)
-        def assertNotInitialized(*args):
+                run_git_flow, 'feature', *args)
+
+        def assert_not_initialized(*args):
             self.assertRaises(NotInitialized,
-                runGitFlow, 'feature', *args)
-        assertNotInitialized('start', 'xxx')
-        assertNotInitialized('finish', 'recursion')
-        assertNotInitialized('publish', 'recursion')
-        assertNotInitialized('track', 'recursion')
-        assertNotInitialized('diff', 'recursion')
-        assertNotInitialized('rebase', 'recursion')
-        assertNotInitialized('pull', 'even')
+                              run_git_flow, 'feature', *args)
+        assert_not_initialized('start', 'xxx')
+        assert_not_initialized('finish', 'recursion')
+        assert_not_initialized('publish', 'recursion')
+        assert_not_initialized('track', 'recursion')
+        assert_not_initialized('diff', 'recursion')
+        assert_not_initialized('rebase', 'recursion')
+        assert_not_initialized('pull', 'even')
+
 
 class TestFeature(TestCase):
 
     @copy_from_fixture('sample_repo')
     def test_feature_list(self):
-        stdout = runGitFlow('feature', 'list', capture=1)
+        stdout = run_git_flow('feature', 'list', capture=1)
         expected = [
             '  even',
             '* recursion'
@@ -263,7 +258,7 @@ class TestFeature(TestCase):
 
     @copy_from_fixture('sample_repo')
     def test_feature_list_verbose(self):
-        stdout = runGitFlow('feature', 'list', '--verbose', capture=1)
+        stdout = run_git_flow('feature', 'list', '--verbose', capture=1)
         expected = [
             '  even      (based on latest devel)',
             '* recursion (based on latest devel)'
@@ -274,7 +269,7 @@ class TestFeature(TestCase):
     def test_feature_list_verbose_rebased(self):
         self.repo.refs['devel'].checkout()
         fake_commit(self.repo, 'A commit on devel')
-        stdout = runGitFlow('feature', 'list', '--verbose', capture=1)
+        stdout = run_git_flow('feature', 'list', '--verbose', capture=1)
         expected = [
             '  even      (may be rebased)',
             '  recursion (may be rebased)'
@@ -284,12 +279,12 @@ class TestFeature(TestCase):
     @sandboxed
     def test_feature_list_verbose_no_commits(self):
         repo = create_git_repo(self)
-        gitflow = GitFlow(repo).init()
+        GitFlow(repo).init()
         repo.create_head('feature/wow', 'HEAD')
-        stdout = runGitFlow('feature', 'list', '--verbose', capture=1)
+        stdout = run_git_flow('feature', 'list', '--verbose', capture=1)
         expected = [
-          '  wow (no commits yet)'
-          ]
+            '  wow (no commits yet)'
+        ]
         self.assertEqual(stdout.splitlines(), expected)
 
     @copy_from_fixture('sample_repo')
@@ -297,70 +292,70 @@ class TestFeature(TestCase):
         self.repo.create_head('devel', 'feat/recursion', force=1)
         self.repo.refs['devel'].checkout()
         fake_commit(self.repo, 'A commit on devel')
-        stdout = runGitFlow('feature', 'list', '--verbose', capture=1)
+        stdout = run_git_flow('feature', 'list', '--verbose', capture=1)
         expected = [
-          '  even      (may be rebased)',
-          '  recursion (is behind devel, may ff)'
-          ]
+            '  even      (may be rebased)',
+            '  recursion (is behind devel, may ff)'
+        ]
         self.assertEqual(stdout.splitlines(), expected)
 
-    #--- feature start ---
+    # --- feature start ---
 
     @copy_from_fixture('sample_repo')
     def test_feature_start(self):
-        runGitFlow('feature', 'start', 'wow-feature')
+        run_git_flow('feature', 'start', 'wow-feature')
         self.assertIn('feat/wow-feature', Repo().branches)
 
     @copy_from_fixture('sample_repo')
     def test_feature_start_alt_base(self):
-        runGitFlow('feature', 'start', 'wow-feature', 'devel')
+        run_git_flow('feature', 'start', 'wow-feature', 'devel')
         self.assertIn('feat/wow-feature', Repo().branches)
 
-    ## feature branch is not required to start at `develop`, rethink this
-    ## @copy_from_fixture('sample_repo')
-    ## def test_feature_start_wrong_alt_base_raises_error(self):
-    ##     self.repo.refs['stable'].checkout()
-    ##     fake_commit(self.repo, 'A fake commit on stable')
-    ##     self.assertRaises(BaseNotOnBranch,
-    ##                       runGitFlow, 'feature', 'start', 'wow', 'stable')
+    # feature branch is not required to start at `develop`, rethink this
+    # @copy_from_fixture('sample_repo')
+    # def test_feature_start_wrong_alt_base_raises_error(self):
+    # self.repo.refs['stable'].checkout()
+    #      fake_commit(self.repo, 'A fake commit on stable')
+    # self.assertRaises(BaseNotOnBranch,
+    # run_git_flow, 'feature', 'start', 'wow', 'stable')
 
     @copy_from_fixture('sample_repo')
     def test_feature_start_empty_name(self):
         self.assert_argparse_error('must not by empty',
-                                 runGitFlow, 'feature', 'start', '')
+                                   run_git_flow, 'feature', 'start', '')
         self.assert_argparse_error('must not by empty',
-                                 runGitFlow, 'feature', 'start', '', 'devel')
+                                   run_git_flow, 'feature', 'start', '', 'devel')
 
     @copy_from_fixture('sample_repo')
     def test_feature_start_no_name(self):
         self.assert_argparse_error(None,
-                                 runGitFlow, 'feature', 'start')
+                                   run_git_flow, 'feature', 'start')
 
-    #--- feature finish ---
+    # --- feature finish ---
 
     @remote_clone_from_fixture('sample_repo')
     def test_feature_finish(self):
         GitFlow('.').init()
-        runGitFlow('feature', 'finish', 'recursion')
+        run_git_flow('feature', 'finish', 'recursion')
         self.assertNotIn('feat/recursion', Repo().branches)
 
     @copy_from_fixture('sample_repo')
     def test_feature_finish_current(self):
         GitFlow('.').init()
-        runGitFlow('feature', 'finish')
+        run_git_flow('feature', 'finish')
         self.assertNotIn('feat/recursion', Repo().branches)
 
     @copy_from_fixture('sample_repo')
     def test_feature_finish_empty_prefix(self):
         GitFlow('.').init()
-        runGitFlow('feature', 'checkout', 'even')
-        runGitFlow('feature', 'finish', '')
+        run_git_flow('feature', 'checkout', 'even')
+        run_git_flow('feature', 'finish', '')
         self.assertNotIn('feat/even', Repo().branches)
 
     @copy_from_fixture('sample_repo')
     def test_feature_finish_prefix(self):
         GitFlow('.').init()
-        runGitFlow('feature', 'finish', 'e')
+        run_git_flow('feature', 'finish', 'e')
         self.assertNotIn('feat/even', Repo().branches)
 
     @copy_from_fixture('sample_repo')
@@ -368,179 +363,178 @@ class TestFeature(TestCase):
         gitflow = GitFlow('.').init()
         gitflow.develop().checkout()
         fake_commit(gitflow.repo, 'A commit on devel')
-        runGitFlow('feature', 'finish', 'even', '--rebase')
+        run_git_flow('feature', 'finish', 'even', '--rebase')
         self.assertNotIn('feat/even', Repo().branches)
         self.assertEqual(gitflow.develop().commit.message,
                          'Finished feature even.\n')
         # :todo: think about some other test to see if it really worked
 
-    #:todo: test-cases for `feature finish --rebase` w/ conflict
+    # :todo: test-cases for `feature finish --rebase` w/ conflict
 
     @copy_from_fixture('sample_repo')
     def test_feature_finish_keep(self):
         GitFlow('.').init()
-        runGitFlow('feature', 'finish', 'even', '--keep')
+        run_git_flow('feature', 'finish', 'even', '--keep')
         self.assertIn('feat/even', Repo().branches)
 
-    #:todo: test-cases for `feature finish --fetch`
-    #:todo: test-cases for `feature finish --force-delete`
+    # :todo: test-cases for `feature finish --fetch`
+    # :todo: test-cases for `feature finish --force-delete`
 
-    #--- feature publish ---
+    # --- feature publish ---
 
     @remote_clone_from_fixture('sample_repo')
     def test_feature_publish(self):
         GitFlow('.').init()
-        runGitFlow('feature', 'start', 'wow')
-        runGitFlow('feature', 'publish', 'wow')
+        run_git_flow('feature', 'start', 'wow')
+        run_git_flow('feature', 'publish', 'wow')
         self.assertIn('feat/wow', Repo().remotes['my-remote'].refs)
 
     @remote_clone_from_fixture('sample_repo')
     def test_feature_publish_current(self):
         GitFlow('.').init()
-        runGitFlow('feature', 'start', 'wow')
-        runGitFlow('feature', 'publish')
+        run_git_flow('feature', 'start', 'wow')
+        run_git_flow('feature', 'publish')
         self.assertIn('feat/wow', Repo().remotes['my-remote'].refs)
 
     @remote_clone_from_fixture('sample_repo')
     def test_feature_publish_empty_prefix(self):
         GitFlow('.').init()
-        runGitFlow('feature', 'start', 'wow')
-        runGitFlow('feature', 'publish', '')
+        run_git_flow('feature', 'start', 'wow')
+        run_git_flow('feature', 'publish', '')
         self.assertIn('feat/wow', Repo().remotes['my-remote'].refs)
 
     @remote_clone_from_fixture('sample_repo')
     def test_feature_publish_prefix(self):
         GitFlow('.').init()
-        runGitFlow('feature', 'start', 'wow')
-        runGitFlow('feature', 'publish', 'w')
+        run_git_flow('feature', 'start', 'wow')
+        run_git_flow('feature', 'publish', 'w')
         self.assertIn('feat/wow', Repo().remotes['my-remote'].refs)
 
-    #--- feature track ---
+    # --- feature track ---
 
     @remote_clone_from_fixture('sample_repo')
     def test_feature_track(self):
         GitFlow('.').init()
-        runGitFlow('feature', 'track', 'even')
+        run_git_flow('feature', 'track', 'even')
 
     @remote_clone_from_fixture('sample_repo')
     def test_feature_track_name_is_required(self):
         GitFlow('.').init()
         self.assert_argparse_error(None,
-                                 runGitFlow, 'feature', 'track')
+                                   run_git_flow, 'feature', 'track')
         self.assert_argparse_error('must not by empty',
-                                 runGitFlow, 'feature', 'track', '')
+                                   run_git_flow, 'feature', 'track', '')
 
-    #--- feature diff ---
+    # --- feature diff ---
 
     @copy_from_fixture('sample_repo')
     def test_feature_diff(self):
-        runGitFlow('feature', 'diff', 'recursion')
+        run_git_flow('feature', 'diff', 'recursion')
 
     @copy_from_fixture('sample_repo')
     def test_feature_diff_current(self):
-        runGitFlow('feature', 'diff')
+        run_git_flow('feature', 'diff')
 
     @copy_from_fixture('sample_repo')
     def test_feature_diff_empty_prefix(self):
-        runGitFlow('feature', 'diff', '')
+        run_git_flow('feature', 'diff', '')
 
     @copy_from_fixture('sample_repo')
     def test_feature_diff_prefix(self):
-        runGitFlow('feature', 'diff', 'rec')
+        run_git_flow('feature', 'diff', 'rec')
 
-    #--- feature rebase ---
+    # --- feature rebase ---
 
     @copy_from_fixture('sample_repo')
     def test_feature_rebase(self):
-        runGitFlow('feature', 'rebase', 'recursion')
+        run_git_flow('feature', 'rebase', 'recursion')
 
     @copy_from_fixture('sample_repo')
     def test_feature_rebase_current(self):
-        runGitFlow('feature', 'rebase')
+        run_git_flow('feature', 'rebase')
 
     @copy_from_fixture('sample_repo')
     def test_feature_rebase_empty_prefix(self):
-        runGitFlow('feature', 'rebase', '')
+        run_git_flow('feature', 'rebase', '')
 
     @copy_from_fixture('sample_repo')
     def test_feature_rebase_prefix(self):
-        runGitFlow('feature', 'rebase', 'rec')
+        run_git_flow('feature', 'rebase', 'rec')
 
-    #--- feature  checkout ---
+    # --- feature  checkout ---
 
     @copy_from_fixture('sample_repo')
     def test_feature_checkout(self):
-        runGitFlow('feature', 'checkout', 'even')
+        run_git_flow('feature', 'checkout', 'even')
 
     @copy_from_fixture('sample_repo')
     def test_feature_checkout_current(self):
         self.assert_argparse_error(None,
-                                 runGitFlow, 'feature', 'checkout')
+                                   run_git_flow, 'feature', 'checkout')
 
     @copy_from_fixture('sample_repo')
     def test_feature_checkout_empty_prefix(self):
         self.assert_argparse_error('must not by empty',
-                                 runGitFlow, 'feature', 'checkout', '')
+                                   run_git_flow, 'feature', 'checkout', '')
 
     @copy_from_fixture('sample_repo')
     def test_feature_checkout_prefix(self):
-        runGitFlow('feature', 'checkout', 'rec')
+        run_git_flow('feature', 'checkout', 'rec')
 
-    #--- feature pull ---
+    # --- feature pull ---
 
     @remote_clone_from_fixture('sample_repo')
     def test_feature_pull(self):
         GitFlow('.').init()
-        runGitFlow('feature', 'pull', 'my-remote', 'even')
+        run_git_flow('feature', 'pull', 'my-remote', 'even')
 
     @remote_clone_from_fixture('sample_repo')
     def test_feature_pull_empty_remote_raises_error(self):
         GitFlow('.').init()
         self.assert_argparse_error('must not by empty',
-                                 runGitFlow, 'feature', 'pull', '', 'even')
+                                   run_git_flow, 'feature', 'pull', '', 'even')
 
     @remote_clone_from_fixture('sample_repo')
     def test_feature_pull_nonexisting_remote_raises_error(self):
         GitFlow('.').init()
         self.assertRaises(NoSuchRemoteError,
-                          runGitFlow, 'feature', 'pull', 'some-remote', 'even')
+                          run_git_flow, 'feature', 'pull', 'some-remote', 'even')
 
     @remote_clone_from_fixture('sample_repo')
     def test_feature_pull_name_is_required(self):
         GitFlow('.').init()
-        self.assertRaises(NoSuchBranchError, runGitFlow, 'feature', 'pull', 'my-remote')
-        self.assertRaises(NoSuchBranchError, runGitFlow, 'feature', 'pull', 'my-remote', '')
+        self.assertRaises(NoSuchBranchError, run_git_flow, 'feature', 'pull', 'my-remote')
+        self.assertRaises(NoSuchBranchError, run_git_flow, 'feature', 'pull', 'my-remote', '')
 
 
 class TestRelease(TestCase):
 
     @copy_from_fixture('release')
     def test_release_list(self):
-        stdout = runGitFlow('release', 'list', capture=1)
+        stdout = run_git_flow('release', 'list', capture=1)
         expected = [
-          '  1.0'
-          ]
+            '  1.0'
+        ]
         self.assertEqual(stdout.splitlines(), expected)
 
     @copy_from_fixture('release')
     def test_release_list_verbose(self):
-        stdout = runGitFlow('release', 'list', '--verbose', capture=1)
+        stdout = run_git_flow('release', 'list', '--verbose', capture=1)
         expected = [
-          '  1.0 (based on latest devel)'
-          ]
+            '  1.0 (based on latest devel)'
+        ]
         self.assertEqual(stdout.splitlines(), expected)
 
-
-    #--- release start ---
+    # --- release start ---
 
     @copy_from_fixture('sample_repo')
     def test_release_start(self):
-        runGitFlow('release', 'start', '1.1')
+        run_git_flow('release', 'start', '1.1')
         self.assertIn('rel/1.1', Repo().branches)
 
     @copy_from_fixture('sample_repo')
     def test_release_start_alt_base(self):
-        runGitFlow('release', 'start', '1.1', 'devel')
+        run_git_flow('release', 'start', '1.1', 'devel')
         self.assertIn('rel/1.1', Repo().branches)
 
     @copy_from_fixture('sample_repo')
@@ -548,39 +542,39 @@ class TestRelease(TestCase):
         self.repo.refs['stable'].checkout()
         fake_commit(self.repo, 'A fake commit on stable')
         self.assertRaises(BaseNotOnBranch,
-                          runGitFlow, 'release', 'start', 'wow', 'stable')
+                          run_git_flow, 'release', 'start', 'wow', 'stable')
 
     @copy_from_fixture('release')
     def test_release_start_empty_name(self):
         self.assert_argparse_error('must not by empty',
-                                 runGitFlow, 'release', 'start', '')
+                                   run_git_flow, 'release', 'start', '')
 
     @copy_from_fixture('release')
     def test_release_start_no_name(self):
         self.assert_argparse_error(None,
-                                 runGitFlow, 'release', 'start')
+                                   run_git_flow, 'release', 'start')
 
-    #--- release finish ---
+    # --- release finish ---
 
     @copy_from_fixture('release')
     def test_release_finish(self):
         gitflow = GitFlow('.').init()
         gitflow.checkout('release', '1.0')
-        runGitFlow('release', 'finish', '1.0')
+        run_git_flow('release', 'finish', '1.0')
         self.assertNotIn('rel/1.0', Repo().branches)
 
     @copy_from_fixture('release')
     def test_release_finish_current(self):
         gitflow = GitFlow('.').init()
         gitflow.checkout('release', '1.0')
-        runGitFlow('release', 'finish')
+        run_git_flow('release', 'finish')
         self.assertNotIn('rel/1.0', Repo().branches)
 
     @copy_from_fixture('release')
     def test_release_finish_empty_prefix(self):
         gitflow = GitFlow('.').init()
         gitflow.checkout('release', '1.0')
-        runGitFlow('release', 'finish', '')
+        run_git_flow('release', 'finish', '')
         self.assertNotIn('rel/1.0', Repo().branches)
 
     @copy_from_fixture('release')
@@ -589,75 +583,75 @@ class TestRelease(TestCase):
         gitflow.checkout('release', '1.0')
         # release finish requires a name, not a prefix
         self.assertRaises(NoSuchBranchError,
-                          runGitFlow, 'release', 'finish', '1')
+                          run_git_flow, 'release', 'finish', '1')
 
-    #:todo: test-cases for `release finish --rebase`
-    #:todo: test-cases for `release finish --fetch`
-    #:todo: test-cases for `release finish --keep`
-    #:todo: test-cases for `release finish --force-delete`
+    # :todo: test-cases for `release finish --rebase`
+    # :todo: test-cases for `release finish --fetch`
+    # :todo: test-cases for `release finish --keep`
+    # :todo: test-cases for `release finish --force-delete`
 
-    #--- release publish ---
+    # --- release publish ---
 
     @remote_clone_from_fixture('sample_repo')
     def test_release_publish(self):
         GitFlow('.').init()
-        runGitFlow('release', 'start', '1.1')
-        runGitFlow('release', 'publish', '1.1')
+        run_git_flow('release', 'start', '1.1')
+        run_git_flow('release', 'publish', '1.1')
         self.assertIn('rel/1.1', Repo().remotes['my-remote'].refs)
 
     @remote_clone_from_fixture('sample_repo')
     def test_release_publish_current(self):
         GitFlow('.').init()
-        runGitFlow('release', 'start', '1.1')
-        runGitFlow('release', 'publish')
+        run_git_flow('release', 'start', '1.1')
+        run_git_flow('release', 'publish')
         self.assertIn('rel/1.1', Repo().remotes['my-remote'].refs)
 
     @remote_clone_from_fixture('sample_repo')
     def test_release_publish_empty_prefix(self):
         GitFlow('.').init()
-        runGitFlow('release', 'start', '1.1')
-        runGitFlow('release', 'publish', '')
+        run_git_flow('release', 'start', '1.1')
+        run_git_flow('release', 'publish', '')
         self.assertIn('rel/1.1', Repo().remotes['my-remote'].refs)
 
     @remote_clone_from_fixture('sample_repo')
     def test_release_publish_prefix(self):
         GitFlow('.').init()
-        runGitFlow('release', 'start', '1.1')
+        run_git_flow('release', 'start', '1.1')
         self.assertRaises(NoSuchBranchError,
-                          runGitFlow, 'release', 'publish', '1')
+                          run_git_flow, 'release', 'publish', '1')
 
-    #--- release track ---
+    # --- release track ---
 
     @remote_clone_from_fixture('release')
     def test_release_track(self):
         GitFlow('.').init()
-        runGitFlow('release', 'track', '1.0')
+        run_git_flow('release', 'track', '1.0')
 
     @remote_clone_from_fixture('sample_repo')
     def test_release_track_name_is_required(self):
         GitFlow('.').init()
         self.assert_argparse_error(None,
-                                 runGitFlow, 'release', 'track')
+                                   run_git_flow, 'release', 'track')
         self.assert_argparse_error('must not by empty',
-                                 runGitFlow, 'release', 'track', '')
+                                   run_git_flow, 'release', 'track', '')
 
-    #--- unsupported `release` subcommands ---
+    # --- unsupported `release` subcommands ---
 
     def test_release_diff_is_no_valid_subcommand(self):
         self.assert_argparse_error("invalid choice: 'diff'",
-                                 runGitFlow, 'release', 'diff')
+                                   run_git_flow, 'release', 'diff')
 
     def test_release_rebase_is_no_valid_subcommand(self):
         self.assert_argparse_error("invalid choice: 'rebase'",
-                                 runGitFlow, 'release', 'rebase')
+                                   run_git_flow, 'release', 'rebase')
 
     def test_release_checkout_is_no_valid_subcommand(self):
         self.assert_argparse_error("invalid choice: 'checkout'",
-                                 runGitFlow, 'release', 'checkout')
+                                   run_git_flow, 'release', 'checkout')
 
     def test_release_pull_is_no_valid_subcommand(self):
         self.assert_argparse_error("invalid choice: 'pull'",
-                                 runGitFlow, 'release', 'pull')
+                                   run_git_flow, 'release', 'pull')
 
 
 class TestHotfix(TestCase):
@@ -665,228 +659,228 @@ class TestHotfix(TestCase):
     @copy_from_fixture('sample_repo')
     def test_hotfix_list(self):
         self.repo.create_head('hf/2.3', 'HEAD')
-        stdout = runGitFlow('hotfix', 'list', capture=1)
+        stdout = run_git_flow('hotfix', 'list', capture=1)
         expected = [
-          '  2.3'
-          ]
+            '  2.3'
+        ]
         self.assertEqual(stdout.splitlines(), expected)
 
     @copy_from_fixture('sample_repo')
     def test_hotfix_list_verbose(self):
         self.repo.create_head('hf/2.3', 'HEAD')
-        stdout = runGitFlow('hotfix', 'list', '--verbose', capture=1)
+        stdout = run_git_flow('hotfix', 'list', '--verbose', capture=1)
         expected = [
-          '  2.3 (based on latest stable)'
-          ]
+            '  2.3 (based on latest stable)'
+        ]
         self.assertEqual(stdout.splitlines(), expected)
 
     @copy_from_fixture('release')
     def test_hotfix_list_verbose_tagged(self):
-        runGitFlow('release', 'finish', '1.0')
-        runGitFlow('hotfix', 'start', '1.0.1')
+        run_git_flow('release', 'finish', '1.0')
+        run_git_flow('hotfix', 'start', '1.0.1')
         fake_commit(self.repo, 'Hotfix commit.')
-        stdout = runGitFlow('hotfix', 'list', '--verbose', capture=1)
+        stdout = run_git_flow('hotfix', 'list', '--verbose', capture=1)
         expected = [
-          '* 1.0.1 (based on v1.0)'
-          ]
+            '* 1.0.1 (based on v1.0)'
+        ]
         self.assertEqual(stdout.splitlines(), expected)
 
-    #--- hotfix start ---
+    # --- hotfix start ---
 
     @copy_from_fixture('sample_repo')
     def test_hotfix_start(self):
-        runGitFlow('hotfix', 'start', 'wow-hotfix')
+        run_git_flow('hotfix', 'start', 'wow-hotfix')
         self.assertIn('hf/wow-hotfix', Repo().branches)
 
     @copy_from_fixture('sample_repo')
     def test_hotfix_start_alt_base(self):
-        runGitFlow('hotfix', 'start', 'wow-hotfix', 'stable')
+        run_git_flow('hotfix', 'start', 'wow-hotfix', 'stable')
         self.assertIn('hf/wow-hotfix', Repo().branches)
 
     @copy_from_fixture('sample_repo')
     def test_hotfix_start_wrong_alt_base_raises_error(self):
         self.assertRaises(BaseNotOnBranch,
-                          runGitFlow, 'hotfix', 'start', 'wow-feature', 'devel')
+                          run_git_flow, 'hotfix', 'start', 'wow-feature', 'devel')
 
     @copy_from_fixture('sample_repo')
     def test_hotfix_start_empty_name(self):
         self.assert_argparse_error('must not by empty',
-                                 runGitFlow, 'hotfix', 'start', '')
+                                   run_git_flow, 'hotfix', 'start', '')
 
     @copy_from_fixture('sample_repo')
     def test_hotfix_start_no_name(self):
         self.assert_argparse_error(None,
-                                 runGitFlow, 'hotfix', 'start')
+                                   run_git_flow, 'hotfix', 'start')
 
-    #--- hotfix finish ---
+    # --- hotfix finish ---
 
     @remote_clone_from_fixture('sample_repo')
     def test_hotfix_finish(self):
         GitFlow('.').init()
-        runGitFlow('hotfix', 'start', 'fast')
+        run_git_flow('hotfix', 'start', 'fast')
         self.assertIn('hf/fast', Repo().branches)
-        runGitFlow('hotfix', 'finish', 'fast')
+        run_git_flow('hotfix', 'finish', 'fast')
         self.assertNotIn('hf/fast', Repo().branches)
 
     @copy_from_fixture('sample_repo')
     def test_hotfix_finish_current(self):
         GitFlow('.').init()
-        runGitFlow('hotfix', 'start', 'fast')
-        runGitFlow('hotfix', 'finish')
+        run_git_flow('hotfix', 'start', 'fast')
+        run_git_flow('hotfix', 'finish')
         self.assertNotIn('hf/fast', Repo().branches)
 
     @copy_from_fixture('sample_repo')
     def test_hotfix_finish_empty_prefix(self):
         GitFlow('.').init()
-        runGitFlow('hotfix', 'start', 'fast')
-        runGitFlow('hotfix', 'finish', '')
+        run_git_flow('hotfix', 'start', 'fast')
+        run_git_flow('hotfix', 'finish', '')
         self.assertNotIn('hf/fast', Repo().branches)
 
     @copy_from_fixture('sample_repo')
     def test_hotfix_finish_prefix(self):
         GitFlow('.').init()
-        runGitFlow('hotfix', 'start', 'fast')
+        run_git_flow('hotfix', 'start', 'fast')
         self.assertRaises(NoSuchBranchError,
-                          runGitFlow, 'hotfix', 'finish', 'f')
+                          run_git_flow, 'hotfix', 'finish', 'f')
 
-    #:todo: test-cases for `hotfix finish --rebase`
-    #:todo: test-cases for `hotfix finish --fetch`
-    #:todo: test-cases for `hotfix finish --keep`
-    #:todo: test-cases for `hotfix finish --force-delete`
+    # :todo: test-cases for `hotfix finish --rebase`
+    # :todo: test-cases for `hotfix finish --fetch`
+    # :todo: test-cases for `hotfix finish --keep`
+    # :todo: test-cases for `hotfix finish --force-delete`
 
-    #--- hotfix publish ---
+    # --- hotfix publish ---
 
     @remote_clone_from_fixture('sample_repo')
     def test_hotfix_publish(self):
         GitFlow('.').init()
-        runGitFlow('hotfix', 'start', 'wow')
-        runGitFlow('hotfix', 'publish', 'wow')
+        run_git_flow('hotfix', 'start', 'wow')
+        run_git_flow('hotfix', 'publish', 'wow')
         self.assertIn('hf/wow', Repo().remotes['my-remote'].refs)
 
     @remote_clone_from_fixture('sample_repo')
     def test_hotfix_publish_current(self):
         GitFlow('.').init()
-        runGitFlow('hotfix', 'start', 'wow')
-        runGitFlow('hotfix', 'publish')
+        run_git_flow('hotfix', 'start', 'wow')
+        run_git_flow('hotfix', 'publish')
         self.assertIn('hf/wow', Repo().remotes['my-remote'].refs)
 
     @remote_clone_from_fixture('sample_repo')
     def test_hotfix_publish_empty_prefix(self):
         GitFlow('.').init()
-        runGitFlow('hotfix', 'start', 'wow')
-        runGitFlow('hotfix', 'publish', '')
+        run_git_flow('hotfix', 'start', 'wow')
+        run_git_flow('hotfix', 'publish', '')
         self.assertIn('hf/wow', Repo().remotes['my-remote'].refs)
 
     @remote_clone_from_fixture('sample_repo')
     def test_hotfix_publish_prefix(self):
         GitFlow('.').init()
-        runGitFlow('hotfix', 'start', 'wow')
+        run_git_flow('hotfix', 'start', 'wow')
         self.assertRaises(NoSuchBranchError,
-                          runGitFlow, 'hotfix', 'publish', 'w')
+                          run_git_flow, 'hotfix', 'publish', 'w')
 
-    #--- unsupported `hotfix` subcommands ---
+    # --- unsupported `hotfix` subcommands ---
 
     def test_hotfix_track_is_no_valid_subcommand(self):
         self.assert_argparse_error("invalid choice: 'track'",
-                                 runGitFlow, 'hotfix', 'track')
+                                   run_git_flow, 'hotfix', 'track')
 
     def test_hotfix_diff_is_no_valid_subcommand(self):
         self.assert_argparse_error("invalid choice: 'diff'",
-                                 runGitFlow, 'hotfix', 'diff')
+                                   run_git_flow, 'hotfix', 'diff')
 
     def test_hotfix_rebase_is_no_valid_subcommand(self):
         self.assert_argparse_error("invalid choice: 'rebase'",
-                                 runGitFlow, 'hotfix', 'rebase')
+                                   run_git_flow, 'hotfix', 'rebase')
 
     def test_hotfix_checkout_is_no_valid_subcommand(self):
         self.assert_argparse_error("invalid choice: 'checkout'",
-                                 runGitFlow, 'hotfix', 'checkout')
+                                   run_git_flow, 'hotfix', 'checkout')
 
     def test_hotfix_pull_is_no_valid_subcommand(self):
         self.assert_argparse_error("invalid choice: 'pull'",
-                                 runGitFlow, 'hotfix', 'pull')
+                                   run_git_flow, 'hotfix', 'pull')
+
 
 class TestSupport(TestCase):
 
     @copy_from_fixture('sample_repo')
     def test_support_list(self):
         self.repo.create_head('supp/1.0-22', 'HEAD')
-        stdout = runGitFlow('support', 'list', capture=1)
+        stdout = run_git_flow('support', 'list', capture=1)
         expected = [
-          '  1.0-22'
-          ]
+            '  1.0-22'
+        ]
         self.assertEqual(stdout.splitlines(), expected)
 
     @copy_from_fixture('sample_repo')
     def test_support_list_verbose(self):
         self.repo.create_head('supp/1.0-22', 'HEAD')
-        stdout = runGitFlow('support', 'list', '--verbose', capture=1)
+        stdout = run_git_flow('support', 'list', '--verbose', capture=1)
         expected = [
-          '  1.0-22 (based on latest stable)'
-          ]
+            '  1.0-22 (based on latest stable)'
+        ]
         self.assertEqual(stdout.splitlines(), expected)
 
     @copy_from_fixture('release')
     def test_support_list_verbose_tagged(self):
-        runGitFlow('release', 'finish', '1.0')
-        runGitFlow('support', 'start', '1.0-22')
+        run_git_flow('release', 'finish', '1.0')
+        run_git_flow('support', 'start', '1.0-22')
         fake_commit(self.repo, 'Support commit.')
-        stdout = runGitFlow('support', 'list', '--verbose', capture=1)
+        stdout = run_git_flow('support', 'list', '--verbose', capture=1)
         expected = [
-          '* 1.0-22 (based on v1.0)'
-          ]
+            '* 1.0-22 (based on v1.0)'
+        ]
         self.assertEqual(stdout.splitlines(), expected)
 
-    #--- support start ---
+    # --- support start ---
 
     @copy_from_fixture('sample_repo')
     def test_support_start(self):
-        runGitFlow('support', 'start', 'wow-support')
+        run_git_flow('support', 'start', 'wow-support')
         self.assertIn('supp/wow-support', Repo().branches)
 
     @copy_from_fixture('sample_repo')
     def test_support_start_alt_base(self):
-        runGitFlow('support', 'start', 'wow-support', 'stable')
+        run_git_flow('support', 'start', 'wow-support', 'stable')
         self.assertIn('supp/wow-support', Repo().branches)
 
     @copy_from_fixture('sample_repo')
     def test_support_start_wrong_alt_base_raises_error(self):
         self.assertRaises(BaseNotOnBranch,
-                          runGitFlow, 'support', 'start', 'wow-support', 'devel')
+                          run_git_flow, 'support', 'start', 'wow-support', 'devel')
 
     @copy_from_fixture('sample_repo')
     def test_support_start_empty_name(self):
         self.assert_argparse_error('must not by empty',
-                                 runGitFlow, 'support', 'start', '')
+                                   run_git_flow, 'support', 'start', '')
 
     @copy_from_fixture('sample_repo')
     def test_support_start_no_name(self):
         self.assert_argparse_error(None,
-                                 runGitFlow, 'support', 'start')
+                                   run_git_flow, 'support', 'start')
 
-
-    #--- unsupported `support` subcommands ---
+    # --- unsupported `support` subcommands ---
 
     def test_support_publish_is_no_valid_subcommand(self):
         self.assert_argparse_error("invalid choice: 'finish'",
-                                 runGitFlow, 'support', 'finish')
+                                   run_git_flow, 'support', 'finish')
 
     def test_support_track_is_no_valid_subcommand(self):
         self.assert_argparse_error("invalid choice: 'track'",
-                                 runGitFlow, 'support', 'track')
+                                   run_git_flow, 'support', 'track')
 
     def test_support_diff_is_no_valid_subcommand(self):
         self.assert_argparse_error("invalid choice: 'diff'",
-                                 runGitFlow, 'support', 'diff')
+                                   run_git_flow, 'support', 'diff')
 
     def test_support_rebase_is_no_valid_subcommand(self):
         self.assert_argparse_error("invalid choice: 'rebase'",
-                                 runGitFlow, 'support', 'rebase')
+                                   run_git_flow, 'support', 'rebase')
 
     def test_support_checkout_is_no_valid_subcommand(self):
         self.assert_argparse_error("invalid choice: 'checkout'",
-                                 runGitFlow, 'support', 'checkout')
+                                   run_git_flow, 'support', 'checkout')
 
     def test_support_pull_is_no_valid_subcommand(self):
         self.assert_argparse_error("invalid choice: 'pull'",
-                                 runGitFlow, 'support', 'pull')
+                                   run_git_flow, 'support', 'pull')

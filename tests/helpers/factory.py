@@ -15,6 +15,7 @@ from git import Repo
 __copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel"
 __license__ = "BSD"
 
+
 def create_sandbox(testcase):
     """
     Sets up a temporary, self-destructing directory and chdir to it.
@@ -41,4 +42,3 @@ def create_git_repo(testcase):
     create_sandbox(testcase)
     repo = Repo.init()
     return repo
-

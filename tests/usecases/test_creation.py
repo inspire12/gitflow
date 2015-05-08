@@ -25,9 +25,8 @@ class TestGitFlow(TestCase):
 
         gitflow.init()
 
-        self.assertEquals(['develop', 'master'],
-                [b.name for b in self.repo.branches])
+        self.assertEquals(
+            ['develop', 'master'],
+            [b.name for b in self.repo.branches])
 
-        fb = gitflow.create('feature', 'foo')
-
-
+        gitflow.create('feature', 'foo')

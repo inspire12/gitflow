@@ -16,6 +16,7 @@ from git import Repo
 __copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel"
 __license__ = "BSD"
 
+
 def sandboxed(f):
     """
     This decorator sets up a temporary, self-destructing empty directory and
@@ -82,6 +83,7 @@ def copy_from_fixture(fixture_name):
         return _inner
     return _outer
 
+
 def clone_from_fixture(fixture_name):
     """
     This decorator sets up a temporary, self-destructing sandbox, cloned from
@@ -111,6 +113,7 @@ def copy_gitflow_config(src, dest):
                 writer.set_value(section, item, value)
     writer.release()
     del writer
+
 
 def remote_clone_from_fixture(fixture_name, copy_config=True):
     """
