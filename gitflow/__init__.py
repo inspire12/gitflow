@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 """
 git-flow -- A collection of Git extensions to provide high-level
 repository operations for Vincent Driessen's branching model.

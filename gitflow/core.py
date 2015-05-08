@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 #
 # This file is part of `gitflow`.
 # Copyright (c) 2010-2011 Vincent Driessen
@@ -5,10 +8,8 @@
 # Distributed under a BSD-like license. For full terms see the file LICENSE.txt
 #
 
-import os
 import sys
 import time
-import datetime
 import ConfigParser
 from functools import wraps
 
@@ -20,12 +21,13 @@ from gitflow.branches import BranchManager
 from gitflow.util import itersubclasses
 
 from gitflow.exceptions import (NotInitialized, BranchExistsError,
-                                BranchTypeExistsError, MergeConflict,
+                                MergeConflict,
                                 NoSuchRemoteError, NoSuchBranchError,
                                 Usage, BadObjectError)
 
 __copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel"
 __license__ = "BSD"
+
 
 def datetime_to_timestamp(d):
     return time.mktime(d.timetuple()) + d.microsecond / 1e6
@@ -40,12 +42,11 @@ def requires_repo(f):
         return f(self, *args, **kwargs)
     return _inner
 
+
 def requires_initialized(f):
     @wraps(f)
     def _inner(self, *args, **kwargs):
-        if (not self.is_initialized() or
-            not self.master_name() in self.repo.branches or
-            not self.develop_name() in self.repo.branches):
+        if not self.is_initialized() or not self.master_name() in self.repo.branches or not self.develop_name() in self.repo.branches:
             msg = 'This repo has not yet been initialized for git-flow.'
             raise NotInitialized(msg)
         return f(self, *args, **kwargs)
@@ -54,7 +55,8 @@ def requires_initialized(f):
 
 def info(*texts):
     for txt in texts:
-        print txt
+        print(txt)
+
 
 def warn(*texts):
     for txt in texts:
@@ -105,10 +107,9 @@ class GitFlow(object):
             'gitflow.branch.develop': 'develop',
             'gitflow.prefix.versiontag': '',
             'gitflow.origin': 'origin',
-            }
+        }
         for identifier, manager in self.managers.items():
             self.defaults['gitflow.prefix.%s' % identifier] = manager.DEFAULT_PREFIX
-
 
     def _init_config(self, master=None, develop=None, prefixes={}, names={},
                      force_defaults=False):
@@ -140,9 +141,10 @@ class GitFlow(object):
             branch = self.repo.create_head(master, origin)
             branch.set_tracking_branch(origin)
         elif self.repo.heads:
-            raise NotImplementedError('Local and remote branches exist, '
-                                     'but neither %s nor %s'
-                                     % (master, self.origin_name(master) ))
+            raise NotImplementedError(
+                'Local and remote branches exist, but neither %s nor %s' % (
+                    master, self.origin_name(master)
+                ))
         else:
             # Create 'master' branch
             info('Creating branch %r' % master)
@@ -168,7 +170,6 @@ class GitFlow(object):
         # switch to develop branch if its newly created
         info('Switching to branch %s' % branch)
         branch.checkout()
-
 
     def _enforce_git_repo(self):
         """
@@ -229,7 +230,6 @@ class GitFlow(object):
 
     def is_set(self, setting):
         return self.get(setting, None) is not None
-
 
     @requires_repo
     def _safe_get(self, setting_name):
@@ -303,7 +303,8 @@ class GitFlow(object):
             if repo.active_branch.name.startswith(manager.prefix):
                 return manager.shorten(repo.active_branch.name)
             else:
-                raise NoSuchBranchError('The current branch is no %s branch. '
+                raise NoSuchBranchError(
+                    'The current branch is no %s branch. '
                     'Please specify one explicitly.' % identifier)
         return manager.shorten(manager.by_name_prefix(prefix).name)
 
@@ -315,7 +316,7 @@ class GitFlow(object):
             A :class:`BranchManager <git.branches.BranchManager>` for the given
             identifier must exist in the :attr:`self.managers`.
 
-        :param  name: 
+        :param  name:
            If the `name` is empty, see if the current branch is of
            type `identifier`. If so, returns the current branches
            short name, otherwise raises :exc:`NoSuchBranchError`.
@@ -332,13 +333,13 @@ class GitFlow(object):
             if repo.active_branch.name.startswith(manager.prefix):
                 return manager.shorten(repo.active_branch.name)
             else:
-                raise NoSuchBranchError('The current branch is no %s branch. '
+                raise NoSuchBranchError(
+                    'The current branch is no %s branch. '
                     'Please specify one explicitly.' % identifier)
         elif must_exist and not manager.full_name(name) in (b.name for b in manager.list()):
             raise NoSuchBranchError('There is no %s branch named %s.'
                                     % (identifier, name))
         return name
-
 
     @requires_repo
     def status(self):
@@ -370,7 +371,6 @@ class GitFlow(object):
         """
         return len(self.repo.index.diff(self.repo.head.commit)) > 0
 
-
     @requires_repo
     def require_no_merge_conflict(self):
         """
@@ -384,7 +384,6 @@ class GitFlow(object):
         except ValueError:
             # no such reference, so there is no merge conflict
             pass
-
 
     def is_merged_into(self, commit, target_branch):
         """
@@ -414,7 +413,6 @@ class GitFlow(object):
             b.lstrip('* ')
             for b in self.git.branch('-a', '--contains', commit).splitlines()]
 
-
     def must_be_uptodate(self, branch, fetch):
         remote_branch = self.origin_name(branch)
         if remote_branch in self.branch_names(remote=True):
@@ -438,7 +436,7 @@ class GitFlow(object):
         try:
             commit1 = self.repo.rev_parse(branch1)
             commit2 = self.repo.rev_parse(branch2)
-        except git.BadObject, e:
+        except git.BadObject as e:
             raise NoSuchBranchError(e.args[0])
         if commit1 == commit2:
             return 0
@@ -452,7 +450,6 @@ class GitFlow(object):
             return 2
         else:
             return 3
-
 
     @requires_repo
     def require_branches_equal(self, branch1, branch2):
@@ -485,7 +482,7 @@ class GitFlow(object):
         self.repo.create_tag(tagname, commit, message=message or None, **kwargs)
 
     #
-    #====== sub commands =====
+    # ====== sub commands =====
     #
 
     @requires_repo
@@ -521,7 +518,7 @@ class GitFlow(object):
                 'No %s branches exist.' % identifier,
                 'You can start a new %s branch with the command:' % identifier,
                 '    git flow %s start <%s> [<base>]' % (identifier, arg0_name)
-                )
+            )
 
         # determine the longest branch name
         width = max(len(b.name) for b in branches) - len(manager.prefix) + 1
@@ -545,7 +542,7 @@ class GitFlow(object):
                     extra_info = '(no commits yet)'
                 elif use_tagname:
                     try:
-                        extra_info = self.git.name_rev('--tags','--name-only',
+                        extra_info = self.git.name_rev('--tags', '--name-only',
                                                        '--no-undefined', base_sha)
                         extra_info = '(based on %s)' % extra_info
                     except GitCommandError:
@@ -559,7 +556,6 @@ class GitFlow(object):
                         extra_info = '(may be rebased)'
 
             info(prefix + name + extra_info)
-
 
     @requires_initialized
     def create(self, identifier, name, base, fetch):
@@ -583,7 +579,6 @@ class GitFlow(object):
         """
         return self.managers[identifier].create(name, base, fetch=fetch)
 
-
     @requires_initialized
     def finish(self, identifier, name, fetch, rebase, keep, force_delete,
                tagging_info):
@@ -602,7 +597,7 @@ class GitFlow(object):
         branch = mgr.by_name_prefix(name)
         try:
             self.require_no_merge_conflict()
-        except MergeConflict, e:
+        except MergeConflict as e:
             raise Usage(e,
                         "You can then complete the finish by running it again:",
                         "    git flow %s finish %s" % (identifier, name)
@@ -644,11 +639,10 @@ class GitFlow(object):
         :param name:
             The friendly (short) name to work on.
         """
-        repo = self.repo
         mgr = self.managers[identifier]
         full_name = mgr.full_name(name)
         base = self.git.merge_base(mgr.default_base(), full_name)
-        print self.git.diff('%s..%s' % (base, full_name))
+        print(self.git.diff('%s..%s' % (base, full_name)))
 
     @requires_initialized
     def rebase(self, identifier, name, interactive):
@@ -668,9 +662,8 @@ class GitFlow(object):
             If True, do an interactive rebase.
         """
         warn("Will try to rebase %s branch '%s' ..." % (identifier, name))
-        repo = self.repo
         mgr = self.managers[identifier]
-        full_name = mgr.full_name(name)
+        mgr.full_name(name)
         # :todo: require_clean_working_tree
         self.checkout(identifier, name)
         args = []
@@ -703,7 +696,7 @@ class GitFlow(object):
         # :todo: require_clean_working_tree
         full_name = mgr.full_name(name)
         remote_name = self.origin_name(full_name)
-        if not full_name in repo.branches:
+        if full_name not in repo.branches:
             raise NoSuchBranchError(full_name)
         if remote_name in repo.refs:
             raise BranchExistsError(remote_name)
@@ -717,7 +710,6 @@ class GitFlow(object):
         # configure remote tracking
         repo.branches[full_name].set_tracking_branch(info.remote_ref)
         return full_name
-
 
     @requires_initialized
     def pull(self, identifier, remote, name):
@@ -742,7 +734,7 @@ class GitFlow(object):
             current_branch = repo.active_branch
             if branch_name != current_branch.name:
                 warn("Trying to pull from '%s' while currently on branch '%s'."
-                     % (branch_name , current_branch))
+                     % (branch_name, current_branch))
                 raise SystemExit("To avoid unintended merges, git-flow aborted.")
 
         repo = self.repo
@@ -766,7 +758,7 @@ class GitFlow(object):
             info("Pulled %s's changes into %s." % (remote, full_name))
         else:
             # Setup the non-tracking local branch clone for the first time
-            self.require_remote(remote).fetch(full_name+':'+full_name)
+            self.require_remote(remote).fetch(full_name + ':' + full_name)
             repo.heads[full_name].checkout()
             info("Created local branch %s based on %s's %s."
                  % (full_name, remote, full_name))

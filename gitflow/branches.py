@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 #
 # This file is part of `gitflow`.
 # Copyright (c) 2010-2011 Vincent Driessen
@@ -18,6 +21,7 @@ from gitflow.exceptions import (NoSuchBranchError, BranchExistsError,
 
 __copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel"
 __license__ = "BSD"
+
 
 class BranchManager(object):
     """
@@ -42,14 +46,16 @@ class BranchManager(object):
             return self.gitflow.get_prefix(self.identifier)
         except:
             return self.DEFAULT_PREFIX
-    def _set_prefix(self, value): self._prefix = value
+
+    def _set_prefix(self, value):
+        self._prefix = value
     prefix = property(_get_prefix, _set_prefix)
 
     def __init__(self, gitflow, prefix=None):
         from gitflow.core import GitFlow
         assert isinstance(gitflow, GitFlow), "Argument 'gitflow' must be a GitFlow instance."
         self.gitflow = gitflow
-        if not prefix is None:
+        if prefix is not None:
             assert isinstance(prefix, basestring), "Argument 'prefix' must be a string."
             self.prefix = prefix
         else:
@@ -109,12 +115,13 @@ class BranchManager(object):
         if num_matches == 1:
             return matches[0]
         elif num_matches < 1:
-            raise NoSuchBranchError('There is no %s branch matching the '
-                    'prefix "%s"' % (self.identifier, nameprefix))
+            raise NoSuchBranchError(
+                'There is no %s branch matching the '
+                'prefix "%s"' % (self.identifier, nameprefix))
         else:
-            raise PrefixNotUniqueError('There are multiple %s branches '
-                    'matching the prefix "%s": %s' % (self.identifier,
-                        nameprefix, matches))
+            raise PrefixNotUniqueError(
+                'There are multiple %s branches '
+                'matching the prefix "%s": %s' % (self.identifier, nameprefix, matches))
 
     def iter(self):
         """
@@ -263,7 +270,7 @@ class BranchManager(object):
         stdout = StringIO()
         try:
             repo.git.merge(full_name, output_stream=stdout, **kwargs)
-        except GitCommandError, e:
+        except GitCommandError as e:
             txt = stdout.getvalue().rstrip()
             if e.stderr:
                 txt = txt + '\n' + e.stderr
@@ -314,7 +321,6 @@ class FeatureBranchManager(BranchManager):
         return super(FeatureBranchManager, self).create(
             name, base, fetch=fetch, must_be_on_default_base=False)
 
-
     def finish(self, name, fetch=False, rebase=False, keep=False,
                force_delete=False, push=False, tagging_info=None):
         """
@@ -352,7 +358,7 @@ class FeatureBranchManager(BranchManager):
                    'Finished %(identifier)s %(short_name)s.')
         if not keep:
             self.delete(name, force=force_delete)
-            to_push.append(':'+full_name)
+            to_push.append(':' + full_name)
         if push:
             gitflow.origin().push(to_push)
 
@@ -407,8 +413,9 @@ class ReleaseBranchManager(BranchManager):
 
         to_push = [self.gitflow.develop_name(), self.gitflow.master_name()]
 
-        self.merge(name, self.gitflow.master_name(),
-                'Finished %s %s.' % (self.identifier, name))
+        self.merge(
+            name, self.gitflow.master_name(),
+            'Finished %s %s.' % (self.identifier, name))
 
         tag = None
         if tagging_info is not None:
@@ -418,8 +425,9 @@ class ReleaseBranchManager(BranchManager):
             # has failed, but the tag was set successful, we skip it
             # now.
             # :todo: check: if tag exists, it must point to the commit
-            tag = gitflow.tag(tagname, self.gitflow.master_name(),
-                        **tagging_info)
+            tag = gitflow.tag(
+                tagname, self.gitflow.master_name(),
+                **tagging_info)
             to_push.append(tagname)
 
         # merge the master branch back into develop; this makes the
@@ -431,7 +439,7 @@ class ReleaseBranchManager(BranchManager):
                    'Finished %s %s.' % (self.identifier, name))
         if not keep:
             self.delete(name, force=force_delete)
-            to_push.append(':'+full_name)
+            to_push.append(':' + full_name)
         if push:
             gitflow.origin().push(to_push)
 
@@ -476,5 +484,4 @@ class SupportBranchManager(BranchManager):
             name, base, fetch=fetch, must_be_on_default_base=True)
 
     def finish(self, *args):
-        raise NotImplementedError("Finishing support branches does not make "
-                "any sense.")
+        raise NotImplementedError("Finishing support branches does not make any sense.")
