@@ -5,6 +5,7 @@ from __future__ import (absolute_import, division, print_function,
 # This file is part of `gitflow`.
 # Copyright (c) 2010-2011 Vincent Driessen
 # Copyright (c) 2012-2013 Hartmut Goebel
+# Copyright (c) 2015 Christian Assing
 # Distributed under a BSD-like license. For full terms see the file LICENSE.txt
 #
 
@@ -28,7 +29,7 @@ from gitflow.exceptions import (NotInitialized, BranchExistsError,
                                 NoSuchRemoteError, NoSuchBranchError,
                                 Usage, BadObjectError)
 
-__copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel"
+__copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel; 2015 Christian Assing"
 __license__ = "BSD"
 
 

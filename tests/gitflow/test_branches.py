@@ -2,6 +2,7 @@
 # This file is part of `gitflow`.
 # Copyright (c) 2010-2011 Vincent Driessen
 # Copyright (c) 2012-2013 Hartmut Goebel
+# Copyright (c) 2015 Christian Assing
 # Distributed under a BSD-like license. For full terms see the file LICENSE.txt
 #
 
@@ -22,7 +23,7 @@ from tests.helpers import (copy_from_fixture, remote_clone_from_fixture,
                            fake_commit, all_commits, set_gnupg_home)
 from tests.helpers.factory import create_git_repo
 
-__copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel"
+__copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel; 2015 Christian Assing"
 __license__ = "BSD"
 
 

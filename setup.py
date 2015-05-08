@@ -3,6 +3,7 @@
 # This file is part of `gitflow`.
 # Copyright (c) 2010-2011 Vincent Driessen
 # Copyright (c) 2012-2013 Hartmut Goebel
+# Copyright (c) 2015 Christian Assing
 # Distributed under a BSD-like license. For full terms see the file LICENSE.txt
 #
 
@@ -21,7 +22,7 @@ long_description = codecs.open('README.rst', "r", "utf-8").read()
 install_requires = ['GitPython>=1.0.1', "future"]
 
 setup(
-    name="gitflow",
+    name="nu-gitflow",
     scripts=['bin/git-flow'],
     version=distmeta.__version__,
     description="Git extensions to provide high-level repository operations for Vincent Driessen's branching model.",
