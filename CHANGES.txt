@@ -1,3 +1,11 @@
+v1.0dev
+-------
+
+* New name: nu-gitflow
+* Python 3 support
+* Drop support for Python < 2.7
+
+
 v0.5.1
 -----------
 

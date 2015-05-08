@@ -32,13 +32,9 @@ Installing git-flow
 
 You can install ``git-flow``, using::
 
-    easy_install gitflow
+    pip install nu-gitflow
 
-Or, if you'd like to use ``pip`` instead::
-
-    pip install gitflow
-
-``git-flow`` requires at least Python 2.5.
+``git-flow`` requires Python >= 2.7 or Python >= 3.4.
 
 Integration with your shell
 -----------------------------
@@ -56,7 +52,7 @@ Please help out
 
 This project is still under development. Feedback and suggestions are
 very welcome and I encourage you to use the `Issues list
-<http://github.com/htgoebel/gitflow/issues>`_ on Github to provide that
+<http://github.com/chassing/gitflow/issues>`_ on Github to provide that
 feedback.
 
 Feel free to fork this repo and to commit your additions. For a list
@@ -83,9 +79,9 @@ Initialization
 ---------------------
 
 To initialize a new repo with the basic branch structure, use::
-  
+
     git flow init [-d]
-  
+
 This will then interactively prompt you with some questions on which
 branches you would like to use as development and production branches,
 and how you would like your prefixes be named. You may simply press
@@ -99,11 +95,11 @@ Creating feature/release/hotfix/support branches
 ----------------------------------------------------
 
 * To list/start/finish feature branches, use::
-  
+
       git flow feature
       git flow feature start <name> [<base>]
       git flow feature finish <name>
-  
+
   For feature branches, the ``<base>`` arg must be a commit on ``develop``.
 
 * To push/pull a feature branch to the remote repository, use::
@@ -112,26 +108,26 @@ Creating feature/release/hotfix/support branches
       git flow feature pull <remote> <name>
 
 * To list/start/finish release branches, use::
-  
+
       git flow release
       git flow release start <release> [<base>]
       git flow release finish <release>
-  
+
   For release branches, the ``<base>`` arg must be a commit on ``develop``.
-  
+
 * To list/start/finish hotfix branches, use::
-  
+
       git flow hotfix
       git flow hotfix start <release> [<base>]
       git flow hotfix finish <release>
-  
+
   For hotfix branches, the ``<base>`` arg must be a commit on ``master``.
 
 * To list/start support branches, use::
-  
+
       git flow support
       git flow support start <release> <base>
-  
+
   For support branches, the ``<base>`` arg must be a commit on ``master``.
 
 
@@ -144,6 +140,10 @@ finish it. In February 2012 Hartmut Goebel started completing the
 Python rewrite and asked Vincent to pull his changes. But in June 2012
 Vincent closed the pull-request and deleted his ``python-rewrite``
 branch. So Hartmut decided to release the Python rewrite on his own.
+
+In year 2015 Hartmuts gitflow was abandoned and the python 3
+support was missing. So Christian Assing decided to fork his version
+and release it as a new python based gitflow alternative.
 
 
 Showing your appreciation

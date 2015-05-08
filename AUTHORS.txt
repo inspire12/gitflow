@@ -9,3 +9,4 @@ Authors are (ordered by first commit date):
 - Sebastian Thiel
 - Peter van der Does
 - Tomas Brambora
+- Christian Assing
