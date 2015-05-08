@@ -265,21 +265,6 @@ class TestFeatureBranchManager(TestCase):
         # change must not be in local repo, since create() uses `fetch`, not `update`
         self.assertNotIn(change, all_commits(self.repo))
 
-    @remote_clone_from_fixture('sample_repo')
-    def test_create_feature_fetch_from_remote_branch_behind_really_fetches(self):
-        rfc0 = self.remote.refs['feat/even'].commit
-        # add a commit to remote feat/even branch
-        self.remote.refs['feat/even'].checkout()
-        change = fake_commit(self.remote, "Yet another even commit.")
-
-        gitflow = GitFlow(self.repo).init()
-        mgr = FeatureBranchManager(gitflow)
-        mgr.create('even', fetch=True)
-        # must not advance feat/even
-        self.assertEqual(self.repo.refs['feat/even'].commit, rfc0)
-        # change must nor be in local repo
-        self.assertNotIn(change, all_commits(self.repo))
-
     @copy_from_fixture('sample_repo')
     def test_create_feature_changes_active_branch(self):
         gitflow = GitFlow(self.repo)
@@ -401,9 +386,7 @@ class TestFeatureBranchManager(TestCase):
 
         # Assert merge commit has been made
         self.assertEqual(2, len(dc1.parents))
-        self.assertEqual(
-            "Merge branch 'feat/even' into devel\n",
-            dc1.message)
+        self.assertTrue(dc1.message.startswith("Merge branch 'feat/even' into devel\n"))
 
         # Assert develop branch advanced
         self.assertNotEqual(dc0, dc1)
@@ -476,7 +459,7 @@ class TestFeatureBranchManager(TestCase):
                          [b.name for b in self.repo.branches])
 
         # Merge commit message
-        self.assertEquals('Finished feature even.\n', dc1.message)
+        self.assertTrue(dc1.message.startswith('Finished feature even.\n'))
 
     @copy_from_fixture('sample_repo')
     def test_finish_feature_keep(self):
@@ -530,7 +513,7 @@ class TestFeatureBranchManager(TestCase):
                          [b.name for b in self.remote.branches])
 
         # Merge commit message
-        self.assertEquals('Finished feature even.\n', rdc1.message)
+        self.assertTrue(rdc1.message.startswith('Finished feature even.\n'))
 
     @remote_clone_from_fixture('sample_repo')
     def test_finish_feature_push_keep(self):
@@ -755,21 +738,6 @@ class TestReleaseBranchManager(TestCase):
         # change must not be in local repo, since create() uses `fetch`, not `update`
         self.assertNotIn(change, all_commits(self.repo))
 
-    @remote_clone_from_fixture('release')
-    def test_create_release_fetch_from_remote_branch_behind_really_fetches(self):
-        rfc0 = self.remote.refs['rel/1.0'].commit
-        # add a commit to remote rel/1.0 branch
-        self.remote.refs['rel/1.0'].checkout()
-        change = fake_commit(self.remote, "Yet another 1.0 commit.")
-
-        gitflow = GitFlow(self.repo).init()
-        mgr = ReleaseBranchManager(gitflow)
-        mgr.create('1.0', fetch=True)
-        # must not advance rel/1.0
-        self.assertEqual(self.repo.refs['rel/1.0'].commit, rfc0)
-        # change must nor be in local repo
-        self.assertNotIn(change, all_commits(self.repo))
-
     def test_create_release_changes_active_branch(self):
         repo = create_git_repo(self)
         gitflow = GitFlow(repo).init()
@@ -906,8 +874,8 @@ class TestReleaseBranchManager(TestCase):
                          [b.name for b in self.repo.branches])
 
         # Merge commit message
-        self.assertEquals('Finished release 1.0.\n', dc1.message)
-        self.assertEquals('Finished release 1.0.\n', mc1.message)
+        self.assertTrue(dc1.message.startswith('Finished release 1.0.\n'))
+        self.assertTrue(mc1.message.startswith('Finished release 1.0.\n'))
 
     @copy_from_fixture('release')
     def test_finish_release_keep(self):
@@ -996,7 +964,7 @@ class TestReleaseBranchManager(TestCase):
                          [b.name for b in self.remote.branches])
 
         # Merge commit message
-        self.assertEquals('Finished release 1.0.\n', rdc1.message)
+        self.assertTrue(rdc1.message.startswith('Finished release 1.0.\n'))
 
     @remote_clone_from_fixture('release')
     def test_finish_release_push_keep(self):
@@ -1190,7 +1158,7 @@ class TestHotfixBranchManager(TestCase):
                          [b.name for b in self.repo.branches])
 
         # Merge commit message
-        self.assertEquals('Finished hotfix 1.2.3.\n', dc1.message)
+        self.assertTrue(dc1.message.startswith('Finished hotfix 1.2.3.\n'))
 
 
 class TestSupportBranchManager(TestCase):

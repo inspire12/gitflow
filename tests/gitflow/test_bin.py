@@ -366,8 +366,7 @@ class TestFeature(TestCase):
         fake_commit(gitflow.repo, 'A commit on devel')
         run_git_flow('feature', 'finish', 'even', '--rebase')
         self.assertNotIn('feat/even', Repo().branches)
-        self.assertEqual(gitflow.develop().commit.message,
-                         'Finished feature even.\n')
+        self.assertTrue(gitflow.develop().commit.message.startswith('Finished feature even.\n'))
         # :todo: think about some other test to see if it really worked
 
     # :todo: test-cases for `feature finish --rebase` w/ conflict
