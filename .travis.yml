@@ -8,3 +8,11 @@ script:
 env:
   - TOXENV=py27
   - TOXENV=py34
+deploy:
+  provider: pypi
+  user: chassing
+  password:
+    secure: KCPXJqLrhx2SGJaDywvaWJ0hgzLbGi9qweRcSRSUFOnu6PcL/Sr2gW4Bj6mMjAfRZuyQ9cs4/zN5MZYF/5BymIbTQx2NkS4ceMAa7cUxKhhWm1GcHmJoY2FBF6yqmd3keSy800iBGkm95YOJXEyeaqGM9SQNeMrjBDHqqxweL+GDQ1QP8mG06VnhfKEM2V6vFkkNWs3y29bp+RYEzt7efZ7xb4g126dhhq0epm4yJA9PhAU8MLnEPHLD40ViEQP6HwVj179KO/BA9BteXDEHgyKGhzgyJjEiQlNe2C0aMUfb2zj6/gwAkG52edX+2KqHqZDdjndIee6tRwHMJPaxzsW6FUEG/1OWZNwVUdcO41qt29COg3C9gEHzlGFnbz2IOKdkJw9QARYNkG1NhcwWaaKnmJmNh3E8PlsOJUXXaVwEgNPtFpPQEN0x5bdr1k8Zo+dbRSQV3XIsLdXANYHDFUijoK0DXQvm3rP3hpqB0jS83tYaA68cz0vbKhA0+P+xbcsupySgzVdnoYkU4zT/EVgpAfsFUaW0KuGKyJy1Gp4qbZCMAAnSgAjaNpw61xYvfsxJGcTeYH2cRaMNAylcpdrW5gvYYtQDXmtCJOUxXjpIeSKMAnHOjs3Mqno/thqOcA1fZowX2PpQ7vplQH5wMO9Lvk2IoQtz11lQboPTjDQ=
+  on:
+    tags: true
+    repo: chassing/gitflow
