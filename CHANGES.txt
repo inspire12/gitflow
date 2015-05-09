@@ -1,5 +1,5 @@
-v1.0dev
--------
+v1.0.0dev
+---------
 
 * New name: nu-gitflow
 * Python 3 support
