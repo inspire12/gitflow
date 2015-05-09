@@ -6,7 +6,9 @@ Pure-Python implementation of Git extensions to provide high-level
 repository operations for Vincent Driessen's
 `branching model <http://nvie.com/git-model>`_.
 
-[![Build Status](https://travis-ci.org/chassing/gitflow.svg?branch=develop)](https://travis-ci.org/chassing/gitflow)
+
+.. image:: https://travis-ci.org/chassing/gitflow.svg?branch=develop
+    :target: https://travis-ci.org/chassing/gitflow
 
 
 Getting started
