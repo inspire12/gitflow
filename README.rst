@@ -148,16 +148,3 @@ branch. So Hartmut decided to release the Python rewrite on his own.
 In year 2015 Hartmuts gitflow was abandoned and the python 3
 support was missing. So Christian Assing decided to fork his version
 and release it as a new python based gitflow alternative.
-
-
-Showing your appreciation
-==============================
-
-Of course, the best way to show your appreciation for the git-flow
-tool itself remains contributing to the community. If you'd like to
-show your appreciation in another way, however, consider donating
-through PayPal: |Donate|_
-
-
-.. |Donate| image:: https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif
-.. _Donate: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=8PS63EM4XPFDY&item_name=gitflow%20donation&no_note=0&cn=Some%20kind%20words%20to%20the%20author%3a&no_shipping=1&rm=1&return=https%3a%2f%2fgithub%2ecom%2fhtgoebel%2fgitflow&cancel_return=https%3a%2f%2fgithub%2ecom%2fhtgoebel%2fgitflow&currency_code=EUR
