@@ -23,7 +23,6 @@ install_requires = ['GitPython>=1.0.1', "future"]
 
 setup(
     name="nu-gitflow",
-    scripts=['bin/git-flow'],
     version=distmeta.__version__,
     description="Git extensions to provide high-level repository operations for Vincent Driessen's branching model.",
     author=distmeta.__author__,
@@ -31,9 +30,14 @@ setup(
     url=distmeta.__homepage__,
     platforms=["any"],
     license="BSD",
-    packages=find_packages(),
+    packages=find_packages(exclude=("tests*",)),
     install_requires=install_requires,
     zip_safe=False,
+    entry_points={
+        'console_scripts': [
+            'git-flow = gitflow.bin:main'
+        ]
+    },
     classifiers=[
         # Picked from
         #    http://pypi.python.org/pypi?:action=list_classifiers
@@ -49,7 +53,10 @@ setup(
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
         "Operating System :: POSIX",
+        "Operating System :: MacOS :: MacOS X",
         "Programming Language :: Python",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.4",
         "Topic :: Software Development :: Version Control",
     ],
     long_description=long_description,
