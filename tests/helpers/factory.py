@@ -2,6 +2,7 @@
 # This file is part of `gitflow`.
 # Copyright (c) 2010-2011 Vincent Driessen
 # Copyright (c) 2012-2013 Hartmut Goebel
+# Copyright (c) 2015 Christian Assing
 # Distributed under a BSD-like license. For full terms see the file LICENSE.txt
 #
 
@@ -12,8 +13,9 @@ import tempfile
 from unittest2 import TestCase
 from git import Repo
 
-__copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel"
+__copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel; 2015 Christian Assing"
 __license__ = "BSD"
+
 
 def create_sandbox(testcase):
     """
@@ -41,4 +43,3 @@ def create_git_repo(testcase):
     create_sandbox(testcase)
     repo = Repo.init()
     return repo
-

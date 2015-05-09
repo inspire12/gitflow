@@ -2,6 +2,7 @@
 # This file is part of `gitflow`.
 # Copyright (c) 2010-2011 Vincent Driessen
 # Copyright (c) 2012-2013 Hartmut Goebel
+# Copyright (c) 2015 Christian Assing
 # Distributed under a BSD-like license. For full terms see the file LICENSE.txt
 #
 
@@ -25,9 +26,8 @@ class TestGitFlow(TestCase):
 
         gitflow.init()
 
-        self.assertEquals(['develop', 'master'],
-                [b.name for b in self.repo.branches])
+        self.assertEquals(
+            ['develop', 'master'],
+            [b.name for b in self.repo.branches])
 
-        fb = gitflow.create('feature', 'foo')
-
-
+        gitflow.create('feature', 'foo')

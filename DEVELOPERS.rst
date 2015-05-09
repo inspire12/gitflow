@@ -71,5 +71,5 @@ Build the documentation by running::
 
 Make sure there are no errors or warnings in the build output. After
 building succeeds the documentation is available in
-:file:`docs/_build/html`.
+:file:`docs/html`.
 

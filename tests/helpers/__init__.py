@@ -2,6 +2,7 @@
 # This file is part of `gitflow`.
 # Copyright (c) 2010-2011 Vincent Driessen
 # Copyright (c) 2012-2013 Hartmut Goebel
+# Copyright (c) 2015 Christian Assing
 # Distributed under a BSD-like license. For full terms see the file LICENSE.txt
 #
 
@@ -13,8 +14,9 @@ from functools import wraps
 from unittest2 import TestCase
 from git import Repo
 
-__copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel"
+__copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel; 2015 Christian Assing"
 __license__ = "BSD"
+
 
 def sandboxed(f):
     """
@@ -82,6 +84,7 @@ def copy_from_fixture(fixture_name):
         return _inner
     return _outer
 
+
 def clone_from_fixture(fixture_name):
     """
     This decorator sets up a temporary, self-destructing sandbox, cloned from
@@ -109,7 +112,9 @@ def copy_gitflow_config(src, dest):
         if section.startswith('gitflow '):
             for item, value in reader.items(section):
                 writer.set_value(section, item, value)
+    writer.release()
     del writer
+
 
 def remote_clone_from_fixture(fixture_name, copy_config=True):
     """
@@ -138,8 +143,11 @@ def remote_clone_from_fixture(fixture_name, copy_config=True):
             self.repo = self.remote.clone(clone, origin='my-remote')
             if copy_config:
                 copy_gitflow_config(self.remote, self.repo)
-            self.repo.config_writer(config_level='repository').set_value(
+            writer = self.repo.config_writer(config_level='repository')
+            writer.set_value(
                 'gitflow', 'origin', 'my-remote')
+            writer.release()
+            del writer
             os.chdir(clone)
             f(self, *args, **kwargs)
         return _inner

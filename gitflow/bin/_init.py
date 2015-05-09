@@ -1,4 +1,6 @@
-# -*- coding: utf-8 ; ispell-local-dictionary: "american" -*-
+# -*- coding: utf-8 -*-
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 """
 git-flow init
 """
@@ -6,23 +8,18 @@ git-flow init
 # This file is part of `gitflow`.
 # Copyright (c) 2010-2011 Vincent Driessen
 # Copyright (c) 2012-2013 Hartmut Goebel
+# Copyright (c) 2015 Christian Assing
 # Distributed under a BSD-like license. For full terms see the file LICENSE.txt
 #
-
-try:
-    # this will trigger readline functionality for raw_input
-    import readline
-except:
-    # readline is optional and may not be available on all installations
-    pass
+from builtins import input
 
 from gitflow.core import GitFlow as CoreGitFlow, warn, info
 
-from gitflow.exceptions import (AlreadyInitialized, NotInitialized,
-                                NoSuchLocalBranchError, NoSuchBranchError)
+from gitflow.exceptions import AlreadyInitialized, NotInitialized, NoSuchLocalBranchError
 
 __copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel"
 __license__ = "BSD"
+
 
 class GitFlow(CoreGitFlow):
 
@@ -42,7 +39,7 @@ class GitFlow(CoreGitFlow):
 
     def get_default(self, setting):
         return self.get(setting, self.defaults[setting])
-        
+
 
 def _ask_branch(args, name, desc1, desc2, suggestions, filter=[]):
     # Two cases are distinguished:
@@ -58,15 +55,14 @@ def _ask_branch(args, name, desc1, desc2, suggestions, filter=[]):
                       if b not in filter]
     if not local_branches:
         if not filter:
-            print "No branches exist yet. Base branches must be created now."
+            print("No branches exist yet. Base branches must be created now.")
         should_check_existence = False
         default_suggestion = default_name
     else:
         should_check_existence = True
-        print
-        print "Which branch should be used for %s?" % desc1
+        print("Which branch should be used for %s?" % desc1)
         for b in local_branches:
-            print '  -', b
+            print('  -', b)
         for default_suggestion in [default_name] + suggestions:
             if default_suggestion in local_branches:
                 break
@@ -74,10 +70,10 @@ def _ask_branch(args, name, desc1, desc2, suggestions, filter=[]):
             default_suggestion = ''
 
     if args.use_defaults and default_suggestion:
-        print "Branch name for %s:" % desc2, default_suggestion
+        print("Branch name for %s:" % desc2, default_suggestion)
         branch_name = default_suggestion
     else:
-        answer = raw_input("Branch name for %s: [%s] "
+        answer = input("Branch name for %s: [%s] "
                            % (desc2, default_suggestion))
         branch_name = answer.strip() or default_suggestion
     if not branch_name:
@@ -88,7 +84,7 @@ def _ask_branch(args, name, desc1, desc2, suggestions, filter=[]):
     if should_check_existence:
         # if no local branch exists and a remote branch of the same
         # name exists, checkout that branch and use it for the local branch
-        if not branch_name in local_branches:
+        if branch_name not in local_branches:
             remote_name = gitflow.origin_name(branch_name)
             if remote_name in gitflow.branch_names(remote=True):
                 branch = gitflow.repo.create_head(branch_name, remote_name)
@@ -105,19 +101,21 @@ def _ask_branch(args, name, desc1, desc2, suggestions, filter=[]):
 def _ask_config(args, name, question):
     default_suggestion = gitflow.get_default(name)
     if args.use_defaults:
-        print question +':', default_suggestion
+        print(question + ':', default_suggestion)
         answer = default_suggestion
     else:
-        answer = raw_input(question + '? [' + default_suggestion + '] ')
+        answer = input(question + '? [' + default_suggestion + '] ')
         answer = answer.strip() or default_suggestion
         if answer == '-':
             answer = ''
     gitflow.set(name, answer)
 
+
 def _ask_prefix(args, name, question):
     name = 'gitflow.prefix.' + name
     if not gitflow.get(name, None) or args.force:
         _ask_config(args, name, question)
+
 
 def _ask_name(args, name, question):
     name = 'gitflow.' + name
@@ -138,22 +136,24 @@ def run_default(args):
         warn("Using default branch names.")
 
     _ask_name(args, "origin", "Remote name to use as origin in git flow")
- 
-    #-- add a master branch if no such branch exists yet
+
+    # -- add a master branch if no such branch exists yet
     if gitflow.has_master_configured() and not args.force:
         master_branch = gitflow.master_name()
     else:
-        master_branch = _ask_branch(args,
+        master_branch = _ask_branch(
+            args,
             'master',
             'bringing forth production releases',
             'production releases',
             ['production', 'main', 'master'])
 
-    #-- add a develop branch if no such branch exists yet
+    # -- add a develop branch if no such branch exists yet
     if gitflow.has_develop_configured() and not args.force:
         develop_branch = gitflow.develop_name()
     else:
-        develop_branch = _ask_branch(args,
+        develop_branch = _ask_branch(
+            args,
             'develop',
             'integration of the "next release"',
             '"next release" development',
@@ -161,8 +161,7 @@ def run_default(args):
             filter=[master_branch])
 
     if not gitflow.is_initialized() or args.force:
-        print
-        print "How to name your supporting branch prefixes?"
+        print("How to name your supporting branch prefixes?")
 
     _ask_prefix(args, "feature", "Feature branches")
     _ask_prefix(args, "release", "Release branches")

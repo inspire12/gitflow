@@ -1,3 +1,0 @@
-let g:PyUnitCmd = 'nosetests --with-machineout -q'
-let g:PyUnitTestsStructure = 'nose'
-let g:PyUnitTestsRoot = 'tests'
