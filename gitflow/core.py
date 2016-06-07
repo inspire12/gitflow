@@ -448,8 +448,11 @@ class GitFlow(object):
         if commit1 == commit2:
             return 0
         try:
-            base = self.repo.git.merge_base(commit1, commit2)
-        except GitCommandError:
+            # merge_base() returns a list of Commit objects
+            # this list will have at max one Commit
+            # or it will be empty if no common merge base exists
+            base = self.repo.merge_base(commit1, commit2)[0]
+        except (GitCommandError, IndexError):
             return 4
         if base == commit1:
             return 1
