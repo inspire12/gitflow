@@ -20,7 +20,8 @@ from gitflow.branches import (
     HotfixBranchManager, SupportBranchManager)
 
 from tests.helpers import (copy_from_fixture, remote_clone_from_fixture,
-                           fake_commit, all_commits, set_gnupg_home)
+                           fake_commit, write_file,
+                           all_commits, set_gnupg_home)
 from tests.helpers.factory import create_git_repo
 
 __copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel; 2015 Christian Assing"
@@ -1066,8 +1067,56 @@ class TestReleaseBranchManager(TestCase):
         self.assertRaises(GitCommandError,
                           mgr.finish, '1.0')
 
+    @copy_from_fixture('release')
+    def test_finish_release_merge_conflict_tag(self):
+        """
+        finish + tag with merge-conflicts on develop
+        """
+        version_filename = 'VERSION'
+        new_version = '1.1\n'
+
+        gitflow = GitFlow(self.repo).init()
+        fmgr = FeatureBranchManager(gitflow)
+        fmgr.finish('even')
+        fake_commit(self.repo, 'Overwrite version',
+                    filename=version_filename,
+                    change=new_version)
+
+        # verify that the tag does not yet exist
+        # "v" comes form "versiontag" prefix in the gitflow config for the "release" fixture
+        self.assertNotIn('v1.0', self.repo.tags)
+
+        mgr = ReleaseBranchManager(gitflow)
+        taginfo = dict(
+            message='Tagging version 1.0',
+        )
+        self.assertRaises(MergeError,
+                          mgr.finish, '1.0', tagging_info=taginfo)
+
+        # verify that the tag exists, even though there was a failed merge
+        self.assertIn('v1.0', self.repo.tags)
+
+        # resolve the conflict
+        # this is in favor of the change on develop
+        write_file(filename=version_filename,
+                   append=False,
+                   change=new_version)
+        gitflow.git.add(version_filename)
+        gitflow.git.commit('-F.git/MERGE_MSG')
+        # the release branch is still here
+        self.assertIn('rel/1.0',
+                      [b.name for b in self.repo.branches])
+        # finish the release again
+        # this should skip the tagging, since that part previously succeeded
+        mgr.finish('1.0', tagging_info=taginfo)
+        # now the release branch is gone
+        self.assertNotIn('rel/1.0',
+                         [b.name for b in self.repo.branches])
+
+        # verify that the tag still exists
+        self.assertIn('v1.0', self.repo.tags)
+
     # :todo: test-cases for finish with merge-conflicts on master
-    # :todo: test-cases for finish + tag with merge-conflicts on develop
     # :todo: test-cases for finish + tag with merge-conflicts on master
 
 
