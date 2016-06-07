@@ -509,7 +509,22 @@ class TestGitFlowMerges(TestCase):
                           repo.git.merge, 'feat/even')
         self.assertRaises(MergeConflict, gitflow.require_no_merge_conflict)
 
-    # :todo: test-cases for compare_branches
+    @copy_from_fixture('sample_repo')
+    def test_compare_branches(self):
+        gitflow = GitFlow(self.repo).init()
+        # Branch heads point to the same commit
+        self.assertEquals(gitflow._compare_branches('devel', 'devel'), 0)
+        # First given branch needs fast-forwarding
+        self.assertEquals(gitflow._compare_branches('devel', 'feat/even'), 1)
+        # Second given branch needs fast-forwarding
+        self.assertEquals(gitflow._compare_branches('feat/recursion', 'devel'), 2)
+        # Branch needs a real merge
+        self.assertEquals(gitflow._compare_branches('feat/even', 'feat/recursion'), 3)
+        # There is no merge base, i.e. the branches have no common ancestors
+        gitflow.repo.git.checkout('stable', orphan='orphan')
+        fake_commit(gitflow.repo, 'Some commit on orphan branch')
+        self.assertEquals(gitflow._compare_branches('stable', 'orphan'), 4)
+
     # :todo: test-cases for require_branches_equal
 
 
