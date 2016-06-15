@@ -1,3 +1,12 @@
+v1.0.2:
+
+Changes since 1.0.0dev
+
+* tests - Use GIT_* envvars for author and committer
+* Call higher level merge_base() to compare branches
+* Add tests for _compare_branches()
+* Skip create tag during finish if it already exists - The previous comparison of the merge base to either of the branches was not correct.
+
 v1.0.0dev
 ---------
 
