@@ -177,16 +177,26 @@ def git_working_dir(func):
     return set_git_working_dir
 
 
-@git_working_dir
-def fake_commit(repo, message, append=True, filename='newfile.py'):
+def write_file(filename, append, change):
+    """
+    Write the contents of "change" into "filename"
+
+    If "append", append to the end. Else, replace the contents.
+    """
     if append:
         f = open(filename, 'a')
     else:
         f = open(filename, 'w')
     try:
-        f.write('This is a dummy change.\n')
+        f.write(change)
     finally:
         f.close()
+
+
+@git_working_dir
+def fake_commit(repo, message, append=True,
+                filename='newfile.py', change='This is a dummy change.\n'):
+    write_file(filename, append, change)
     repo.index.add([filename])
     return repo.index.commit(message)
 

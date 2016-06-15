@@ -423,11 +423,15 @@ class ReleaseBranchManager(BranchManager):
             # In case a previous attempt to finish this release branch
             # has failed, but the tag was set successful, we skip it
             # now.
-            # :todo: check: if tag exists, it must point to the commit
-            tag = gitflow.tag(
-                tagname, self.gitflow.master_name(),
-                **tagging_info)
-            to_push.append(tagname)
+            if tagname not in self.gitflow.repo.tags:
+                tag = gitflow.tag(
+                    tagname, self.gitflow.master_name(),
+                    **tagging_info)
+                to_push.append(tagname)
+            elif self.gitflow.repo.tags[tagname].commit != self.gitflow.master().commit:
+                # if tag exists, it must point to the commit
+                raise TagExistsError('Tag already exists and does not point to %s branch %s'
+                                     % (self.identifier, name))
 
         # merge the master branch back into develop; this makes the
         # master branch - and the new tag (if provided) - a parent of
