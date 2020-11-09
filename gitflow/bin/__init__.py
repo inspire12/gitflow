@@ -31,7 +31,7 @@ from gitflow.util import itersubclasses
 from gitflow.exceptions import (GitflowError,
                                 NotInitialized, BranchTypeExistsError,
                                 BaseNotOnBranch)
-
+import os
 __copyright__ = "2010-2011 Vincent Driessen; 2012-2013 Hartmut Goebel"
 __license__ = "BSD"
 
@@ -396,6 +396,7 @@ class ReleaseCommand(GitFlowCommand):
         print("- When done, run:")
         print()
         print("     git flow release finish", args.version)
+        os.system("echo " + args.version + ">> version")
 
     # - finish
     @classmethod

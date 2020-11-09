@@ -22,7 +22,7 @@ long_description = codecs.open('README.rst', "r", "utf-8").read()
 install_requires = ['GitPython>=1.0.1', "future"]
 
 setup(
-    name="nu-gitflow",
+    name="paige-gitflow",
     version=distmeta.__version__,
     description="Git extensions to provide high-level repository operations for Vincent Driessen's branching model.",
     author=distmeta.__author__,
